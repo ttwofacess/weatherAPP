@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body id="bdy">
+    <div class="container" id="mover">
+        <h1>Free Weather App</h1>
+        <form id="weatherForm">
+            <input type="text" id="cityInput" placeholder="Ingresa una ciudad" required>
+            <button type="submit">Obtener clima</button>
+        </form>
+        <div id="weatherResult" class="hidden">
+            <h2>Clima en <span id="cityName"></span></h2>
+            <p>Temperatura: <span id="temperature"></span> °C</p>
+            <p>Descripción: <span id="description"></span></p>
+        </div>
+        <div id="forecast" class="forecast-container"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
