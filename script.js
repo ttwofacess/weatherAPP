@@ -14,7 +14,6 @@ function getWeather(city) {
         .then(data => {
             if (data.cod === 200) {
                 document.getElementById('cityName').textContent = data.name;
-                /* document.getElementById('temperature').textContent = data.main.temp; */
                 document.getElementById('temperature').textContent = data.main.temp.toFixed(1);  //Formatear temp a 1 digito
                 document.getElementById('description').textContent = data.weather[0].description;
                 document.getElementById('weatherResult').classList.remove('hidden');
@@ -55,12 +54,15 @@ function displayForecast(forecastData) {
         const date = new Date(item.dt * 1000);
         const hours = date.getHours();
         const day = date.toLocaleDateString('es-ES', { weekday: 'short' });
-        /* const temp = item.main.temp; */
         const temp = item.main.temp.toFixed(1);  //Formatear la temperatura a un decimal
         const description = item.weather[0].description;
+        const iconCode = item.weather[0].icon;  //Obtener el codigo del icono
+        const iconUrl = `http://openweathermap.org/img/wn/${iconCode}.png`;  //Construir la URL del icono
+
         forecastItem.innerHTML = `
             <div class="forecast-time">${day} ${hours}:00</div>
             <div class="forecast-temp">${temp}°C</div>
+            <div class="forecast-icon"><img src="${iconUrl}" alt="${description}"></div>
             <div class="forecast-desc">${description}</div>
         `;
 
