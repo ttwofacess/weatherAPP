@@ -1,32 +1,3 @@
-/* document.getElementById('weatherForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const city = document.getElementById('cityInput').value;
-    getWeather(city);
-});
-
-function getWeather(city) {
-    const apiKey = '8e79b74856ffb2bdaed36bec01cefe30'; // Reemplaza con tu clave de API de OpenWeatherMap
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
-
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.cod === 200) {
-                document.getElementById('cityName').textContent = data.name;
-                document.getElementById('temperature').textContent = data.main.temp;
-                document.getElementById('description').textContent = data.weather[0].description;
-                document.getElementById('weatherResult').classList.remove('hidden');
-            } else {
-                alert('Ciudad no encontrada');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching weather data:', error);
-            alert('Hubo un error al obtener los datos del clima');
-        });
-}
- */
-
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const city = document.getElementById('cityInput').value;
@@ -87,10 +58,6 @@ function displayForecast(forecastData) {
         /* const temp = item.main.temp; */
         const temp = item.main.temp.toFixed(1);  //Formatear la temperatura a un decimal
         const description = item.weather[0].description;
-/* const body = document.getElementById('bdy');
-body.style.height = "215vh"; */
-/* const container = document.getElementById('mover');
-container.style.marginTop = "75rem"; */
         forecastItem.innerHTML = `
             <div class="forecast-time">${day} ${hours}:00</div>
             <div class="forecast-temp">${temp}°C</div>
