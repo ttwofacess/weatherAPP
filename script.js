@@ -58,9 +58,13 @@ function displayForecast(forecastData) {
         /* const temp = item.main.temp; */
         const temp = item.main.temp.toFixed(1);  //Formatear la temperatura a un decimal
         const description = item.weather[0].description;
+        const iconCode = item.weather[0].icon;  //Obtener el codigo del icono
+        const iconUrl = `http://openweathermap.org/img/wn/${iconCode}.png`;  //Construir la URL del icono
+
         forecastItem.innerHTML = `
             <div class="forecast-time">${day} ${hours}:00</div>
             <div class="forecast-temp">${temp}°C</div>
+            <div class="forecast-icon"><img src="${iconUrl}" alt="${description}"></div>
             <div class="forecast-desc">${description}</div>
         `;
 
