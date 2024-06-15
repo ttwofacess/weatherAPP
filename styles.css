@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+/*
+<weight>: Use a value from 200 to 1000
+
+.nunito-sans-<uniquifier> {
+  font-family: "Nunito Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100,
+    "YTLC" 500;
+}
+  */
+
 *{
     margin: 0;
     padding: 0;
@@ -6,7 +22,9 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
     background-color: #f0f0f0;
     display: flex;
     justify-content: center;
@@ -29,6 +47,7 @@ body {
 }
 
 h1 {
+    font-weight: 1000;
     margin-bottom: 20px;
 }
 
@@ -42,9 +61,12 @@ input {
     border: 1px solid #ccc;
     width: 80%;
     margin-right: 10px;
+    font-weight: 700;
+    font-size: 1rem;
 }
 
 button {
+    font-weight: 900;
     margin-top: 0.5rem;
     padding: 10px 15px;
     border-radius: 5px;
@@ -61,6 +83,16 @@ button:hover {
 #weatherResult {
     margin-top: 20px;
 } 
+
+#weatherResult h2 {
+    font-weight: 700;
+    font-size: 1.35rem;
+}
+
+#weatherResult p {
+    font-weight: 500;
+    font-size: 1.3rem;
+}
 
 .hidden {
     display: none;
@@ -80,6 +112,8 @@ button:hover {
     padding: 10px;
     margin-bottom: 16px;
     text-align: center;
+    font-size: 1.25rem;
+    font-weight: 500;
 }
 
 @media (max-width: 600px) {
