@@ -5,7 +5,7 @@ document.getElementById('weatherForm').addEventListener('submit', function(event
 });
 
 function getWeather(city) {
-    const apiKey = 'MyAPIKey'; // Reemplaza con tu clave de API de OpenWeatherMap
+    const apiKey = 'MyAPIKey'; // clave de API 
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
 
