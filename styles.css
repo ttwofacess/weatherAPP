@@ -98,6 +98,12 @@ button:hover {
     display: none;
 }
 
+#map {
+    height: 300px;
+    width: 80%;
+    margin: 0.5rem auto;
+}
+
 .forecast-container {
     display: flex;
     flex-wrap: wrap;
