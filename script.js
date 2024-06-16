@@ -18,6 +18,26 @@ function getWeather(city) {
                 document.getElementById('description').textContent = data.weather[0].description;
                 document.getElementById('weatherResult').classList.remove('hidden');
 
+                // Muestra el mapa
+                const lat = data.coord.lat;
+                const lon = data.coord.lon;
+                /* const map = L.map('map').setView([lat, lon], 13); */
+                const map = L.map('map').setView([lat, lon], 10);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                /* L.marker([lat, lon]).addTo(map) */
+                const marker = L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`${data.name}`)
+                    .openPopup();
+
+                 // Añadir capa de nubes de OpenWeatherMap
+                 const clouds = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
+                    attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
+                }).addTo(map);    
+
                 fetch(forecastUrl)
                     .then(response => response.json())
                     .then(forecastData => {
