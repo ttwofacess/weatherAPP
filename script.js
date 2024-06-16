@@ -1,8 +1,12 @@
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const city = document.getElementById('cityInput').value;
+    /* document.getElementById('weatherResult').classList.add('hidden'); */
     getWeather(city);
 });
+
+let map;
+let marker;
 
 function getWeather(city) {
     const apiKey = 'MyAPIKey'; // clave de API 
@@ -22,19 +26,37 @@ function getWeather(city) {
                 const lat = data.coord.lat;
                 const lon = data.coord.lon;
                 /* const map = L.map('map').setView([lat, lon], 13); */
-                const map = L.map('map').setView([lat, lon], 10);
+                /* const map = L.map('map').setView([lat, lon], 10); */
+
+                // Si el mapa ya existe, resetear su vista y eliminar el marcador anterior
+                if (map) {
+                    map.setView([lat, lon], 10);
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.TileLayer) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+                } else {
+                    // Si el mapa no existe, inicializarlo
+                    map = L.map('map').setView([lat, lon], 10);
+                }
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
 
                 /* L.marker([lat, lon]).addTo(map) */
-                const marker = L.marker([lat, lon]).addTo(map)
+                /* const marker = L.marker([lat, lon]).addTo(map) */
+                marker = L.marker([lat, lon]).addTo(map)
                     .bindPopup(`${data.name}`)
                     .openPopup();
 
-                 // Añadir capa de nubes de OpenWeatherMap
-                 const clouds = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
+                 // Añadir capa de temperaturas de OpenWeatherMap
+                 /* const temps = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, { */
+                 L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
                     attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
                 }).addTo(map);    
 
