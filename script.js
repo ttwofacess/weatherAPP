@@ -51,8 +51,6 @@ function getWeather(city) {
                 // Muestra el mapa
                 const lat = data.coord.lat;
                 const lon = data.coord.lon;
-                /* const map = L.map('map').setView([lat, lon], 13); */
-                /* const map = L.map('map').setView([lat, lon], 10); */
 
                 // Si el mapa ya existe, resetear su vista y eliminar el marcador anterior
                 if (map) {
@@ -74,14 +72,11 @@ function getWeather(city) {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
 
-                /* L.marker([lat, lon]).addTo(map) */
-                /* const marker = L.marker([lat, lon]).addTo(map) */
                 marker = L.marker([lat, lon]).addTo(map)
                     .bindPopup(`${data.name}`)
                     .openPopup();
 
                  // Añadir capa de temperaturas de OpenWeatherMap
-                 /* const temps = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, { */
                  L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
                     attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
                 }).addTo(map);    
