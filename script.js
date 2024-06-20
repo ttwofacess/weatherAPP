@@ -1,7 +1,33 @@
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
+
+    const cityInput = document.getElementById('cityInput').value;
+    const currentDate = new Date().toISOString();  //Obtiene la fecha actual en formato ISO
+
+     // Datos a enviar
+    const data = {
+        city: cityInput,
+        date: currentDate    
+    }; 
+
+    // Envía los datos al servidor
+    fetch('saveCity.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        // Aquí se manejar la respuesta del servidor, mostrar un mensaje al usuario, etc.
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
     const city = document.getElementById('cityInput').value;
-    /* document.getElementById('weatherResult').classList.add('hidden'); */
     getWeather(city);
 });
 
