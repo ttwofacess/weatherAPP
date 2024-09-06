@@ -35,6 +35,20 @@
             <input type="text" id="cityInput" placeholder="Ingresa una ciudad" required>
             <button type="submit">Obtener clima</button>
         </form>
+        <div id="weatherResult" class="weather-card hidden">
+            <div class="city-name" id="cityName"></div>
+            <div class="temperature"><span id="temperature"></span>°C</div>
+            <div class="weather-info">
+                <div class="weather-description" id="description"></div>
+                <div class="wind-speed" id="windSpeed"></div>
+                <div class="humidity" id="humidity"></div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <div id="forecast" class="forecast"></div>
     </div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="script.js"></script>
 </body>
 </html>

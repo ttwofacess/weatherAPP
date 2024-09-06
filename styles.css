@@ -14,11 +14,10 @@
 }
   */
 
-*{
+/* *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    /* font-family: "Quicksand", sans-serif; */
 }
 
 body {
@@ -29,14 +28,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* height: 100vh; */ 
-    /* height: 215vh; */
     height: 100%;
     margin: 0;
 }
 
 .container {
-    /* background-color: white; */
     background-color: #fff;
     background-image: radial-gradient(#fff, #00b0ff);
     padding: 20px;
@@ -115,7 +111,6 @@ button:hover {
 .forecast-item {
     flex: 1 1 calc(50% - 16px);
     box-sizing: border-box;
-    /* border: 1px solid #ccc; */
     border: 1px solid #007BFF;
     border-radius: 5px;
     padding: 10px;
@@ -126,10 +121,111 @@ button:hover {
 }
 
 @media (max-width: 600px) {
-    /* body {
-        height: 150vh;
-    }  */
     .forecast-item {
         flex: 1 1 100%;
     }
+} */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 400px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.weather-card {
+    padding: 20px;
+    color: #fff;
+    background-size: cover;
+    background-position: center;
+}
+
+.city-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.temperature {
+    font-size: 72px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.weather-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.weather-description, .wind-speed, .humidity {
+    font-size: 16px;
+}
+
+.forecast {
+    display: flex;
+    overflow-x: auto;
+    padding: 20px;
+    background-color: #f8f8f8;
+}
+
+.forecast-item {
+    flex: 0 0 auto;
+    text-align: center;
+    margin-right: 20px;
+}
+
+.forecast-time {           
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.forecast-icon img {
+    width: 50px;
+    height: 50px;
+}
+
+.forecast-temp {
+    font-size: 18px;
+}
+
+#weatherForm {
+    display: flex;
+    padding: 20px;
+}
+
+#cityInput {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#map {
+    height: 100px;
+    width: 100%;
 }
