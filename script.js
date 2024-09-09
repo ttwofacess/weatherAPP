@@ -35,7 +35,7 @@ let map;
 let marker;
 
 function getWeather(city) {
-    const apiKey = '8e79b74856ffb2bdaed36bec01cefe30'; // clave de API 
+    const apiKey = 'MyAPIKey'; // clave de API 
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
 
