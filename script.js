@@ -21,7 +21,7 @@ document.getElementById('weatherForm').addEventListener('submit', function(event
     .then(response => response.json())
     .then(data => {
         console.log('Success:', data);
-        // Aquí se manejar la respuesta del servidor, mostrar un mensaje al usuario, etc.
+        // Aquí se maneja la respuesta del servidor, mostrar un mensaje al usuario, etc.
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -46,6 +46,16 @@ function getWeather(city) {
                 document.getElementById('cityName').textContent = data.name;
                 document.getElementById('temperature').textContent = data.main.temp.toFixed(1);  //Formatear temp a 1 digito
                 document.getElementById('description').textContent = data.weather[0].description;
+                document.getElementById('wind').textContent = data.wind.speed.toFixed(1); //agrego viento
+                document.getElementById('humidity').textContent = data.main.humidity; //humedad
+                /* document.getElementById('weatherResult').classList.remove('hidden'); */
+
+                //obtener la hora actual
+                /* updateCurrentTime(); */
+
+                //actualizar la hora de la ciudad
+                updateCityTime(data.timezone);
+
                 document.getElementById('weatherResult').classList.remove('hidden');
 
                 // Muestra el mapa
@@ -103,6 +113,30 @@ function getWeather(city) {
             alert('Hubo un error al obtener los datos del clima');
         });
 }
+
+//funcion para actualizar la hora actual
+function updateCurrentTime() {
+    const currentTime = new Date();
+    const timeString = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('currentTime').textContent = timeString;
+}
+
+//funcion para actualizar la hora de la ciudad
+function updateCityTime(timezone) {
+    const cityTime = new Date(new Date().getTime() + timezone * 1000);
+    const timeString = cityTime.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC'
+    });
+    document.getElementById('currentTime').textContent = timeString;
+}
+
+//actualizar la hora cada minuto
+setInterval(() => {
+    const timezone = parseInt(document.getElementById('currentTime').dataset.timezone || '0');
+    updateCityTime(timezone);
+}, 60000);
 
 function displayForecast(forecastData) {
     const forecastContainer = document.getElementById('forecast');
