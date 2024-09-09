@@ -1,135 +1,144 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 
-/*
-<weight>: Use a value from 200 to 1000
-
-.nunito-sans-<uniquifier> {
-  font-family: "Nunito Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-  font-variation-settings:
-    "wdth" 100,
-    "YTLC" 500;
+* {
+    box-sizing: border-box;
 }
-  */
 
-*{
+body, html {
+    background-color: #f0f0f0;
+    font-family: 'Nunito', sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    /* font-family: "Quicksand", sans-serif; */
-}
-
-body {
-    font-family: "Nunito Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-style: normal;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* height: 100vh; */ 
-    /* height: 215vh; */
-    height: 100%;
-    margin: 0;
 }
 
 .container {
-    /* background-color: white; */
+    /* max-width: 400px; */
+    max-width: 370px;
+    margin: 20px auto;
     background-color: #fff;
-    background-image: radial-gradient(#fff, #00b0ff);
-    padding: 20px;
+    outline: 2px solid #ccc; 
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    margin: 0.5rem;
+    overflow: hidden;
 }
 
-h1 {
-    font-weight: 1000;
-    margin-bottom: 20px;
+.weather-card {
+    background-color: #4682b4;
+    border-top: 2px solid #4CA;
+    color: #fff;
+    height: auto;
+    min-height: 250px;
+    overflow: hidden;
+    padding: 20px;
+    position: relative;
+    transition: background-color 2s ease;
 }
 
-form {
-    margin-bottom: 20px;
-}
-
-input {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 80%;
-    margin-right: 10px;
+.city-name {
+    /* font-size: 24px; */
+    font-size: 28px;
     font-weight: 700;
-    font-size: 1rem;
+    /* margin-bottom: 10px; */
+}
+
+.current-time {
+    font-size: 18px;
+}
+
+.weather-data {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+    margin-bottom: 20px;
+}
+
+.temperature {
+    font-size: 72px;
+    font-weight: 300;
+    margin-bottom: 10px; 
+}
+
+.weather-details {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.wind, .humidity {
+    font-size: 18px;
+}
+
+.weather-description {
+    font-size: 24px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.forecast {
+    border-top: 2px solid #4CA;
+    /* border-radius: 3px; */ 
+    display: flex;
+    overflow-x: auto;
+    padding: 20px;
+    /* background-color: #f8f8f8; */
+    background-color: lightslategray;
+}
+
+.forecast-item {
+    flex: 0 0 auto;
+    text-align: center;
+    margin-right: 20px;
+}
+
+.forecast-time {           
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.forecast-icon img {
+    width: 50px;
+    height: 50px;
+}
+
+.forecast-temp {
+    font-size: 18px;
+}
+
+#weatherForm {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+#cityInput {
+    /* flex-grow: 1; */
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+    flex-grow: 0;
+    font-size: 16px;
+    padding: 10px;
+    width: 190px;
 }
 
 button {
-    font-weight: 900;
-    margin-top: 0.5rem;
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    background-color: #007BFF;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
     color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
-}
-
-#weatherResult {
-    margin-top: 20px;
-} 
-
-#weatherResult h2 {
-    font-weight: 700;
-    font-size: 1.35rem;
-}
-
-#weatherResult p {
-    font-weight: 500;
-    font-size: 1.3rem;
-}
-
-.hidden {
-    display: none;
+    background-color: #45a049;
 }
 
 #map {
-    height: 300px;
-    width: 80%;
-    margin: 0.5rem auto;
-    border: 1px solid #007BFF;
-    border-radius: 5px;
+    border-top: 2px solid #4CA;
+    height: 100px;
+    width: 100%;
 }
 
-.forecast-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px; 
-}
-
-.forecast-item {
-    flex: 1 1 calc(50% - 16px);
-    box-sizing: border-box;
-    /* border: 1px solid #ccc; */
-    border: 1px solid #007BFF;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 16px;
-    text-align: center;
-    font-size: 1.25rem;
-    font-weight: 500;
-}
-
-@media (max-width: 600px) {
-    /* body {
-        height: 150vh;
-    }  */
-    .forecast-item {
-        flex: 1 1 100%;
-    }
-}

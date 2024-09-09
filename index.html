@@ -4,29 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="./assets/ico/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="./assets/ico/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./assets/ico/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="./assets/ico/favicon.ico" type="image/png" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
-<body id="bdy">
-    <div class="container" id="mover">
-        <h1>Free Weather App</h1>
+
+<body>
+    <div class="container">
         <form id="weatherForm">
-            <input type="text" id="cityInput" name="city" placeholder="Ingresa una ciudad" required>
-            <button type="submit">Obtener clima</button>
+            <div class="weatherForm">
+                <input type="text" id="cityInput" placeholder="Ej: Madrid, es" required>
+                <button type="submit">Buscar</button>
+            </div>
         </form>
-        <div id="weatherResult" class="hidden">
-            <h2>Clima en <span id="cityName"></span></h2>
-            <p>Temperatura: <span id="temperature"></span> °C</p>
-            <p>Descripción: <span id="description"></span></p>
-            <div id="map"></div>
+
+        <div id="weatherResult" class="weather-card hidden">
+            <div class="weather-info">
+                <div class="city-name" id="cityName"></div>
+                <div class="current-time" id="currentTime"></div>
+            </div>
+            <div class="weather-data">
+                <div class="temperature">
+                    <span id="temperature"></span>°C
+                </div>
+                <div class="weather-details">
+                    <div class="wind">
+                        Viento: <span id="wind"></span> km/s
+                    </div>
+                    <div class="humidity">
+                        Humedad: <span id="humidity"></span>%
+                    </div>
+                </div>
+            </div>
+            <div class="weather-description" id="description"></div>
         </div>
-        <div id="forecast" class="forecast-container"></div>
+        <div id="map"></div>
+        <div id="forecast" class="forecast"></div>
     </div>
-    <script src="script.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="script.js"></script>
 </body>
 </html>
