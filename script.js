@@ -48,10 +48,6 @@ function getWeather(city) {
                 document.getElementById('description').textContent = data.weather[0].description;
                 document.getElementById('wind').textContent = data.wind.speed.toFixed(1); //agrego viento
                 document.getElementById('humidity').textContent = data.main.humidity; //humedad
-                /* document.getElementById('weatherResult').classList.remove('hidden'); */
-
-                //obtener la hora actual
-                /* updateCurrentTime(); */
 
                 //actualizar la hora de la ciudad
                 updateCityTime(data.timezone);
