@@ -31,11 +31,24 @@ document.getElementById('weatherForm').addEventListener('submit', function(event
     getWeather(city);
 });
 
+let apiKey;
 let map;
 let marker;
 
+fetch('getApiKey.php')
+    .then(response => response.json())
+    .then(data => {
+        apiKey = data.apiKey;
+    })
+    .catch(error => console.error('Error:', error));
+
 function getWeather(city) {
-    const apiKey = ''; // clave de API 
+    if(!apiKey) {
+        console.error('API key not loaded');
+        return;
+    }
+
+    //const apiKey = ''; // clave de API 
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
 
