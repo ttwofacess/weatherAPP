@@ -31,11 +31,24 @@ document.getElementById('weatherForm').addEventListener('submit', function(event
     getWeather(city);
 });
 
+let apiKey;
 let map;
 let marker;
 
+fetch('getApiKey.php')
+    .then(response => response.json())
+    .then(data => {
+        apiKey = data.apiKey;
+    })
+    .catch(error => console.error('Error:', error));
+
 function getWeather(city) {
-    const apiKey = 'MyAPIKey'; // clave de API 
+    if(!apiKey) {
+        console.error('API key not loaded');
+        return;
+    }
+
+    //const apiKey = ''; // clave de API 
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
 
@@ -48,10 +61,6 @@ function getWeather(city) {
                 document.getElementById('description').textContent = data.weather[0].description;
                 document.getElementById('wind').textContent = data.wind.speed.toFixed(1); //agrego viento
                 document.getElementById('humidity').textContent = data.main.humidity; //humedad
-                /* document.getElementById('weatherResult').classList.remove('hidden'); */
-
-                //obtener la hora actual
-                /* updateCurrentTime(); */
 
                 //actualizar la hora de la ciudad
                 updateCityTime(data.timezone);

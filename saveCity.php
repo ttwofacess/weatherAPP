@@ -11,9 +11,15 @@ try {
 
     // Obtener los datos enviados por el cliente
     $input = json_decode(file_get_contents('php://input'), true);
-    $city = $input['city'];
-    $date = $input['date'];
-
+    if(preg_match('/^[a-zA-Z\s,]+$/', $input['city'])){
+        $city = $input['city'];
+        $date = $input['date'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'Datos inválidos']);
+        exit;
+    }
+    
     // Insertar los datos en la base de datos
     $insertQuery = $pdo->prepare('INSERT INTO cities (city, date) VALUES (:city, :date)');
     $insertQuery->bindValue(':city', $city, PDO::PARAM_STR);

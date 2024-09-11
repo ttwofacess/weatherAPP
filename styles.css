@@ -12,13 +12,13 @@ body, html {
 }
 
 .container {
-    /* max-width: 400px; */
-    max-width: 370px;
-    margin: 20px auto;
     background-color: #fff;
-    outline: 2px solid #ccc; 
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    /* max-width: 400px; */
+    max-width: 370px;
+    outline: 2px solid #ccc; 
     overflow: hidden;
 }
 
@@ -35,7 +35,6 @@ body, html {
 }
 
 .city-name {
-    /* font-size: 24px; */
     font-size: 28px;
     font-weight: 700;
     /* margin-bottom: 10px; */
@@ -76,19 +75,18 @@ body, html {
 }
 
 .forecast {
-    border-top: 2px solid #4CA;
-    /* border-radius: 3px; */ 
+    background-color: lightslategray;
+    border-top: 2px solid #4CA; 
     display: flex;
     overflow-x: auto;
     padding: 20px;
-    /* background-color: #f8f8f8; */
-    background-color: lightslategray;
 }
 
 .forecast-item {
     flex: 0 0 auto;
-    text-align: center;
     margin-right: 20px;
+    text-align: center;
+    
 }
 
 .forecast-time {           
@@ -97,8 +95,8 @@ body, html {
 }
 
 .forecast-icon img {
-    width: 50px;
     height: 50px;
+    width: 50px;
 }
 
 .forecast-temp {
@@ -113,9 +111,9 @@ body, html {
 }
 
 #cityInput {
-    /* flex-grow: 1; */
     border: 1px solid #ddd;
     border-radius: 5px 0 0 5px;
+    /* flex-grow: 1; */
     flex-grow: 0;
     font-size: 16px;
     padding: 10px;
@@ -123,13 +121,13 @@ body, html {
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 16px;
     background-color: #4CAF50;
-    color: white;
     border: none;
     border-radius: 0 5px 5px 0;
+    color: white;
     cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
 }
 
 button:hover {

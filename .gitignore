@@ -1,0 +1,15 @@
+# Ignore specific files
+config.php
+getApiKey.php
+
+# Commonly ignored folders and files
+.DS_Store
+.idea
+.vscode/
+*.log
+/vendor/
+/node_modules/
+
+# Ignore all .env files
+*.env
+
