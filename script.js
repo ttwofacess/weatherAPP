@@ -1,7 +1,15 @@
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    const cityInput = document.getElementById('cityInput').value;
+    /* const cityInput = document.getElementById('cityInput').value; */
+    const cityInput = document.getElementById('cityInput').value.trim();
+    
+    // Validación básica de la entrada
+    if (!cityInput || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/.test(cityInput)) {
+        alert('Por favor ingrese un nombre de ciudad válido');
+        return;
+    }
+
     const currentDate = new Date().toISOString();  //Obtiene la fecha actual en formato ISO
 
      // Datos a enviar
