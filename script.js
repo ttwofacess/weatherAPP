@@ -1,3 +1,9 @@
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -64,11 +70,16 @@ function getWeather(city) {
         .then(response => response.json())
         .then(data => {
             if (data.cod === 200) {
-                document.getElementById('cityName').textContent = data.name;
-                document.getElementById('temperature').textContent = data.main.temp.toFixed(1);  //Formatear temp a 1 digito
-                document.getElementById('description').textContent = data.weather[0].description;
-                document.getElementById('wind').textContent = data.wind.speed.toFixed(1); //agrego viento
-                document.getElementById('humidity').textContent = data.main.humidity; //humedad
+                /* document.getElementById('cityName').textContent = data.name; */
+                document.getElementById('cityName').textContent = sanitizeHTML(data.name);
+                /* document.getElementById('temperature').textContent = data.main.temp.toFixed(1); */  //Formatear temp a 1 digito
+                document.getElementById('temperature').textContent = sanitizeHTML(data.main.temp.toFixed(1));
+                /* document.getElementById('description').textContent = data.weather[0].description; */
+                document.getElementById('description').textContent = sanitizeHTML(data.weather[0].description);
+                /* document.getElementById('wind').textContent = data.wind.speed.toFixed(1); */ //agrego viento
+                document.getElementById('wind').textContent = sanitizeHTML(data.wind.speed.toFixed(1));
+                /* document.getElementById('humidity').textContent = data.main.humidity; */ //humedad
+                document.getElementById('humidity').textContent = sanitizeHTML(data.main.humidity);
 
                 //actualizar la hora de la ciudad
                 updateCityTime(data.timezone);
@@ -173,12 +184,19 @@ function displayForecast(forecastData) {
         const iconCode = item.weather[0].icon;  //Obtener el codigo del icono
         const iconUrl = `http://openweathermap.org/img/wn/${iconCode}.png`;  //Construir la URL del icono
 
-        forecastItem.innerHTML = `
-            <div class="forecast-time">${day} ${hours}:00</div>
+        /* forecastItem.innerHTML = `
+            <div class="forecast-time">${day} ${hours}:00</div> 
             <div class="forecast-temp">${temp}°C</div>
             <div class="forecast-icon"><img src="${iconUrl}" alt="${description}"></div>
             <div class="forecast-desc">${description}</div>
-        `;
+        `; */
+
+        forecastItem.innerHTML = `
+        <div class="forecast-time">${sanitizeHTML(day)} ${sanitizeHTML(String(hours))}:00</div>
+        <div class="forecast-temp">${sanitizeHTML(String(temp))}°C</div>
+        <div class="forecast-icon"><img src="${sanitizeHTML(iconUrl)}" alt="${sanitizeHTML(description)}"></div>
+        <div class="forecast-desc">${sanitizeHTML(description)}</div>
+    `;
 
         forecastContainer.appendChild(forecastItem);
     });
