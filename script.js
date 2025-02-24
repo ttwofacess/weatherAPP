@@ -4,6 +4,19 @@ function sanitizeHTML(str) {
     return div.innerHTML;
 }
 
+function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 8000 } = options;
+    
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    return fetch(resource, {
+        ...options,
+        signal: controller.signal
+    })
+    .finally(() => clearTimeout(id));
+}
+
 document.getElementById('weatherForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -49,8 +62,14 @@ let apiKey;
 let map;
 let marker;
 
-fetch('getApiKey.php')
-    .then(response => response.json())
+/* fetch('getApiKey.php')
+    .then(response => response.json()) */
+    // Replace the fetch calls in getWeather function
+    fetchWithTimeout('getApiKey.php')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
     .then(data => {
         apiKey = data.apiKey;
     })
