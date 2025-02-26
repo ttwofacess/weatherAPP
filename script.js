@@ -75,90 +75,111 @@ let marker;
     })
     .catch(error => console.error('Error:', error));
 
+    // Limitar las llamadas a la API
+    const rateLimiter = {
+        lastCall: 0,
+        minInterval: 2000, // 2 segundos entre llamadas
+        
+        checkLimit() {
+            const now = Date.now();
+            if (now - this.lastCall < this.minInterval) {
+                throw new Error('Por favor espere antes de realizar otra búsqueda');
+            }
+            this.lastCall = now;
+        }
+    };
+
 function getWeather(city) {
-    if(!apiKey) {
-        console.error('API key not loaded');
+    try {
+        rateLimiter.checkLimit();
+        if(!apiKey) {
+            console.error('API key not loaded');
+            return;
+        } 
+    
+        //const apiKey = ''; // clave de API 
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
+        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.cod === 200) {
+                    /* document.getElementById('cityName').textContent = data.name; */
+                    document.getElementById('cityName').textContent = sanitizeHTML(data.name);
+                    /* document.getElementById('temperature').textContent = data.main.temp.toFixed(1); */  //Formatear temp a 1 digito
+                    document.getElementById('temperature').textContent = sanitizeHTML(data.main.temp.toFixed(1));
+                    /* document.getElementById('description').textContent = data.weather[0].description; */
+                    document.getElementById('description').textContent = sanitizeHTML(data.weather[0].description);
+                    /* document.getElementById('wind').textContent = data.wind.speed.toFixed(1); */ //agrego viento
+                    document.getElementById('wind').textContent = sanitizeHTML(data.wind.speed.toFixed(1));
+                    /* document.getElementById('humidity').textContent = data.main.humidity; */ //humedad
+                    document.getElementById('humidity').textContent = sanitizeHTML(data.main.humidity);
+
+                    //actualizar la hora de la ciudad
+                    updateCityTime(data.timezone);
+
+                    document.getElementById('weatherResult').classList.remove('hidden');
+
+                    // Muestra el mapa
+                    const lat = data.coord.lat;
+                    const lon = data.coord.lon;
+
+                    // Si el mapa ya existe, resetear su vista y eliminar el marcador anterior
+                    if (map) {
+                        map.setView([lat, lon], 10);
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.TileLayer) {
+                                map.removeLayer(layer);
+                            }
+                        });
+                        if (marker) {
+                            map.removeLayer(marker);
+                        }
+                    } else {
+                        // Si el mapa no existe, inicializarlo
+                        map = L.map('map').setView([lat, lon], 10);
+                    }
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    marker = L.marker([lat, lon]).addTo(map)
+                        .bindPopup(`${data.name}`)
+                        .openPopup();
+
+                    // Añadir capa de temperaturas de OpenWeatherMap
+                    L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
+                        attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
+                    }).addTo(map);    
+
+                    fetch(forecastUrl)
+                        .then(response => response.json())
+                        .then(forecastData => {
+                            if (forecastData.cod === "200") {
+                                displayForecast(forecastData);
+                            } else {
+                                alert('Error al obtener el pronóstico');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching forecast data:', error);
+                            alert('Hubo un error al obtener el pronóstico del clima');
+                        });
+                } else {
+                    alert('Ciudad no encontrada');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                alert('Hubo un error al obtener los datos del clima');
+            });
+        }
+    catch (error) {
+        alert(error.message);
         return;
     }
-
-    //const apiKey = ''; // clave de API 
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
-
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.cod === 200) {
-                /* document.getElementById('cityName').textContent = data.name; */
-                document.getElementById('cityName').textContent = sanitizeHTML(data.name);
-                /* document.getElementById('temperature').textContent = data.main.temp.toFixed(1); */  //Formatear temp a 1 digito
-                document.getElementById('temperature').textContent = sanitizeHTML(data.main.temp.toFixed(1));
-                /* document.getElementById('description').textContent = data.weather[0].description; */
-                document.getElementById('description').textContent = sanitizeHTML(data.weather[0].description);
-                /* document.getElementById('wind').textContent = data.wind.speed.toFixed(1); */ //agrego viento
-                document.getElementById('wind').textContent = sanitizeHTML(data.wind.speed.toFixed(1));
-                /* document.getElementById('humidity').textContent = data.main.humidity; */ //humedad
-                document.getElementById('humidity').textContent = sanitizeHTML(data.main.humidity);
-
-                //actualizar la hora de la ciudad
-                updateCityTime(data.timezone);
-
-                document.getElementById('weatherResult').classList.remove('hidden');
-
-                // Muestra el mapa
-                const lat = data.coord.lat;
-                const lon = data.coord.lon;
-
-                // Si el mapa ya existe, resetear su vista y eliminar el marcador anterior
-                if (map) {
-                    map.setView([lat, lon], 10);
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.TileLayer) {
-                            map.removeLayer(layer);
-                        }
-                    });
-                    if (marker) {
-                        map.removeLayer(marker);
-                    }
-                } else {
-                    // Si el mapa no existe, inicializarlo
-                    map = L.map('map').setView([lat, lon], 10);
-                }
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
-
-                marker = L.marker([lat, lon]).addTo(map)
-                    .bindPopup(`${data.name}`)
-                    .openPopup();
-
-                 // Añadir capa de temperaturas de OpenWeatherMap
-                 L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
-                    attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
-                }).addTo(map);    
-
-                fetch(forecastUrl)
-                    .then(response => response.json())
-                    .then(forecastData => {
-                        if (forecastData.cod === "200") {
-                            displayForecast(forecastData);
-                        } else {
-                            alert('Error al obtener el pronóstico');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching forecast data:', error);
-                        alert('Hubo un error al obtener el pronóstico del clima');
-                    });
-            } else {
-                alert('Ciudad no encontrada');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching weather data:', error);
-            alert('Hubo un error al obtener los datos del clima');
-        });
 }
 
 //funcion para actualizar la hora actual
