@@ -1,3 +1,7 @@
+// API key will be fetched from the serverless function
+let openWeatherApiKey = null;
+let apiKeyFetchError = false; // Flag to prevent repeated failed fetches
+
 function sanitizeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
@@ -17,227 +21,239 @@ function fetchWithTimeout(resource, options = {}) {
     .finally(() => clearTimeout(id));
 }
 
-document.getElementById('weatherForm').addEventListener('submit', function(event) {
+// Function to fetch API key from our Cloudflare Function
+async function fetchApiKey() {
+    if (openWeatherApiKey) {
+        return openWeatherApiKey; // Already fetched
+    }
+    if (apiKeyFetchError) { // If a previous attempt failed, don't try again immediately
+        throw new Error('Previously failed to fetch API key.');
+    }
+
+    try {
+        const response = await fetchWithTimeout('/api/config'); // Relative path to the function
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: "Unknown error fetching API key config" }));
+            console.error(`Failed to fetch API key config: ${response.status}`, errorData);
+            throw new Error(`Failed to fetch API key config: ${response.status} ${errorData.error || ''}`);
+        }
+        const config = await response.json();
+        if (config.apiKey) {
+            openWeatherApiKey = config.apiKey;
+            console.log("API Key loaded successfully.");
+            return openWeatherApiKey;
+        } else {
+            throw new Error('API key not found in server response.');
+        }
+    } catch (error) {
+        console.error('Error fetching API key:', error.message);
+        apiKeyFetchError = true; // Set flag on error
+        alert('No se pudo cargar la configuración de la aplicación. La funcionalidad del clima estará deshabilitada. Por favor, inténtelo más tarde.');
+        throw error; // Re-throw to be caught by callers
+    }
+}
+
+
+document.getElementById('weatherForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    /* const cityInput = document.getElementById('cityInput').value; */
-    const cityInput = document.getElementById('cityInput').value.trim();
+    const cityInputVal = document.getElementById('cityInput').value.trim();
     
-    // Validación básica de la entrada
-    if (!cityInput || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/.test(cityInput)) {
+    if (!cityInputVal || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/.test(cityInputVal)) {
         alert('Por favor ingrese un nombre de ciudad válido');
         return;
     }
 
-    const currentDate = new Date().toISOString();  //Obtiene la fecha actual en formato ISO
-
-     // Datos a enviar
-    const data = {
-        city: cityInput,
-        date: currentDate    
-    }; 
-
-    // Envía los datos al servidor
-    fetch('saveCity.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-        // Aquí se maneja la respuesta del servidor, mostrar un mensaje al usuario, etc.
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-
-    const city = document.getElementById('cityInput').value;
-    getWeather(city);
+    try {
+        let currentApiKey = openWeatherApiKey;
+        if (!currentApiKey && !apiKeyFetchError) { // If not fetched yet and no previous error
+            currentApiKey = await fetchApiKey(); // Await the fetch
+        }
+        
+        if (!currentApiKey) {
+            // fetchApiKey would have already shown an alert if it failed
+            console.error("API key not available. Weather search aborted.");
+            // Optionally, re-alert or disable form
+            // alert("La configuración de la API no está disponible. No se puede buscar el clima.");
+            return;
+        }
+        getWeather(cityInputVal, currentApiKey);
+    } catch (error) {
+        // Error during fetchApiKey is handled within fetchApiKey itself with an alert.
+        // This catch is mostly for other unexpected issues before calling getWeather.
+        console.error("Error preparing for weather search:", error.message);
+    }
 });
 
-let apiKey;
 let map;
 let marker;
+let tempOverlayLayer = null; // To store reference to the temperature layer
 
-/* fetch('getApiKey.php')
-    .then(response => response.json()) */
-    // Replace the fetch calls in getWeather function
-    fetchWithTimeout('getApiKey.php')
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return response.json();
-        })
-    .then(data => {
-        apiKey = data.apiKey;
-    })
-    .catch(error => console.error('Error:', error));
-
-    // Limitar las llamadas a la API
-    const rateLimiter = {
-        lastCall: 0,
-        minInterval: 2000, // 2 segundos entre llamadas
-        
-        checkLimit() {
-            const now = Date.now();
-            if (now - this.lastCall < this.minInterval) {
-                throw new Error('Por favor espere antes de realizar otra búsqueda');
-            }
-            this.lastCall = now;
+const rateLimiter = {
+    lastCall: 0,
+    minInterval: 2000,
+    checkLimit() {
+        const now = Date.now();
+        if (now - this.lastCall < this.minInterval) {
+            throw new Error('Por favor espere antes de realizar otra búsqueda');
         }
-    };
+        this.lastCall = now;
+    }
+};
 
-function getWeather(city) {
+// Modified getWeather to accept apiKey as an argument
+function getWeather(city, currentApiKey) { // No longer async, key is passed in
     try {
         rateLimiter.checkLimit();
-        if(!apiKey) {
-            console.error('API key not loaded');
+        // API key check is done before calling getWeather now
+        if(!currentApiKey) {
+             // This case should ideally be prevented by the form submit handler
+            console.error('API key not provided to getWeather function.');
+            alert('Error crítico: Falta la clave API para la búsqueda del clima.');
             return;
-        } 
+        }
     
-        //const apiKey = ''; // clave de API 
-        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&lang=es&appid=${apiKey}`;
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&lang=es&appid=${currentApiKey}`;
+        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=metric&lang=es&appid=${currentApiKey}`;
 
-        fetch(apiUrl)
-            .then(response => response.json())
+        fetchWithTimeout(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('API key inválida o no autorizada por OpenWeatherMap.');
+                    if (response.status === 404) throw new Error('Ciudad no encontrada por OpenWeatherMap.');
+                    throw new Error(`Error HTTP de OpenWeatherMap: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                // Check for OpenWeatherMap's own error codes within a 200 response, if any.
+                // For instance, sometimes they might send a 200 OK with an error message in the body.
+                // However, standard practice is that data.cod === 200 is the success indicator here.
                 if (data.cod === 200) {
-                    /* document.getElementById('cityName').textContent = data.name; */
                     document.getElementById('cityName').textContent = sanitizeHTML(data.name);
-                    /* document.getElementById('temperature').textContent = data.main.temp.toFixed(1); */  //Formatear temp a 1 digito
                     document.getElementById('temperature').textContent = sanitizeHTML(data.main.temp.toFixed(1));
-                    /* document.getElementById('description').textContent = data.weather[0].description; */
                     document.getElementById('description').textContent = sanitizeHTML(data.weather[0].description);
-                    /* document.getElementById('wind').textContent = data.wind.speed.toFixed(1); */ //agrego viento
-                    document.getElementById('wind').textContent = sanitizeHTML(data.wind.speed.toFixed(1));
-                    /* document.getElementById('humidity').textContent = data.main.humidity; */ //humedad
-                    document.getElementById('humidity').textContent = sanitizeHTML(data.main.humidity);
+                    document.getElementById('wind').textContent = sanitizeHTML(data.wind.speed.toFixed(1)) + " m/s";
+                    document.getElementById('humidity').textContent = sanitizeHTML(String(data.main.humidity));
 
-                    //actualizar la hora de la ciudad
                     updateCityTime(data.timezone);
 
                     document.getElementById('weatherResult').classList.remove('hidden');
 
-                    // Muestra el mapa
                     const lat = data.coord.lat;
                     const lon = data.coord.lon;
 
-                    // Si el mapa ya existe, resetear su vista y eliminar el marcador anterior
                     if (map) {
                         map.setView([lat, lon], 10);
-                        map.eachLayer(layer => {
-                            if (layer instanceof L.TileLayer) {
-                                map.removeLayer(layer);
-                            }
-                        });
                         if (marker) {
                             map.removeLayer(marker);
                         }
                     } else {
-                        // Si el mapa no existe, inicializarlo
                         map = L.map('map').setView([lat, lon], 10);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
                     }
 
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    }).addTo(map);
-
                     marker = L.marker([lat, lon]).addTo(map)
-                        .bindPopup(`${data.name}`)
+                        .bindPopup(`${sanitizeHTML(data.name)}`)
                         .openPopup();
+                    
+                    if (tempOverlayLayer && map.hasLayer(tempOverlayLayer)) {
+                        map.removeLayer(tempOverlayLayer);
+                    }
+                    tempOverlayLayer = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${currentApiKey}`, {
+                        attribution: '© <a href="https://openweathermap.org/">OpenWeatherMap</a>'
+                    });
+                    tempOverlayLayer.addTo(map);
 
-                    // Añadir capa de temperaturas de OpenWeatherMap
-                    L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`, {
-                        attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>'
-                    }).addTo(map);    
-
-                    fetch(forecastUrl)
-                        .then(response => response.json())
-                        .then(forecastData => {
-                            if (forecastData.cod === "200") {
-                                displayForecast(forecastData);
-                            } else {
-                                alert('Error al obtener el pronóstico');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching forecast data:', error);
-                            alert('Hubo un error al obtener el pronóstico del clima');
-                        });
+                    return fetchWithTimeout(forecastUrl); // Chain the promise
                 } else {
-                    alert('Ciudad no encontrada');
+                    // Handle cases where OpenWeatherMap API returns a 200 but with an error message (e.g. data.message)
+                    throw new Error(sanitizeHTML('Ciudad no encontrada o error en datos: ' + (data.message || 'Respuesta inválida')));
                 }
             })
-            .catch(error => {
-                console.error('Error fetching weather data:', error);
-                alert('Hubo un error al obtener los datos del clima');
+            .then(forecastResponse => { // This .then is for the forecastUrl fetch
+                if (!forecastResponse) return; // In case the previous chain didn't return a response (e.g. error thrown)
+                if (!forecastResponse.ok) throw new Error('Error al obtener el pronóstico de OpenWeatherMap.');
+                return forecastResponse.json();
+            })
+            .then(forecastData => {
+                if (!forecastData) return;
+                if (forecastData.cod === "200") {
+                    displayForecast(forecastData);
+                } else {
+                    throw new Error(sanitizeHTML('Error al obtener el pronóstico: ' + (forecastData.message || 'Respuesta inválida')));
+                }
+            })
+            .catch(error => { // Catch errors from any part of the promise chain
+                console.error('Error en el proceso de obtención del clima:', error);
+                alert('Hubo un error: ' + error.message);
+                // Optionally hide weather card if it was visible
+                // document.getElementById('weatherResult').classList.add('hidden');
             });
         }
-    catch (error) {
+    catch (error) { // Catches synchronous errors like rateLimiter.checkLimit()
         alert(error.message);
-        return;
     }
 }
 
-//funcion para actualizar la hora actual
-function updateCurrentTime() {
-    const currentTime = new Date();
-    const timeString = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('currentTime').textContent = timeString;
-}
+function updateCityTime(timezoneOffsetSeconds) {
+    const nowUtc = new Date(Date.now() + new Date().getTimezoneOffset() * 60000);
+    const cityTime = new Date(nowUtc.getTime() + timezoneOffsetSeconds * 1000);
 
-//funcion para actualizar la hora de la ciudad
-function updateCityTime(timezone) {
-    const cityTime = new Date(new Date().getTime() + timezone * 1000);
     const timeString = cityTime.toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'UTC'
     });
-    document.getElementById('currentTime').textContent = timeString;
+    const currentTimeElement = document.getElementById('currentTime');
+    currentTimeElement.textContent = timeString;
+    currentTimeElement.dataset.timezoneOffset = timezoneOffsetSeconds;
 }
 
-//actualizar la hora cada minuto
 setInterval(() => {
-    const timezone = parseInt(document.getElementById('currentTime').dataset.timezone || '0');
-    updateCityTime(timezone);
+    const currentTimeElement = document.getElementById('currentTime');
+    const timezoneOffset = currentTimeElement.dataset.timezoneOffset;
+    if (timezoneOffset !== undefined && !document.getElementById('weatherResult').classList.contains('hidden')) {
+        updateCityTime(parseInt(timezoneOffset));
+    }
 }, 60000);
 
 function displayForecast(forecastData) {
     const forecastContainer = document.getElementById('forecast');
-    forecastContainer.innerHTML = ''; // Clear previous forecast
+    forecastContainer.innerHTML = ''; 
 
-    // Get forecasts for the next 48 hours (8 three-hourly intervals per day)
     const forecastItems = forecastData.list.slice(0, 16);
     forecastItems.forEach(item => {
         const forecastItem = document.createElement('div');
         forecastItem.classList.add('forecast-item');
 
-        const date = new Date(item.dt * 1000);
-        const hours = date.getHours();
-        const day = date.toLocaleDateString('es-ES', { weekday: 'short' });
-        const temp = item.main.temp.toFixed(1);  //Formatear la temperatura a un decimal
-        const description = item.weather[0].description;
-        const iconCode = item.weather[0].icon;  //Obtener el codigo del icono
-        const iconUrl = `http://openweathermap.org/img/wn/${iconCode}.png`;  //Construir la URL del icono
+        // item.dt is UTC timestamp in seconds
+        // forecastData.city.timezone is offset from UTC in seconds
+        const localForecastTime = new Date((item.dt + forecastData.city.timezone) * 1000);
 
-        /* forecastItem.innerHTML = `
-            <div class="forecast-time">${day} ${hours}:00</div> 
-            <div class="forecast-temp">${temp}°C</div>
-            <div class="forecast-icon"><img src="${iconUrl}" alt="${description}"></div>
-            <div class="forecast-desc">${description}</div>
-        `; */
+        const displayHours = localForecastTime.getUTCHours(); // Hours in the city's timezone
+        const day = localForecastTime.toLocaleDateString('es-ES', { weekday: 'short', timeZone: 'UTC' }); 
+
+        const temp = item.main.temp.toFixed(1);
+        const description = item.weather[0].description;
+        const iconCode = item.weather[0].icon;
+        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`;
 
         forecastItem.innerHTML = `
-        <div class="forecast-time">${sanitizeHTML(day)} ${sanitizeHTML(String(hours))}:00</div>
-        <div class="forecast-temp">${sanitizeHTML(String(temp))}°C</div>
-        <div class="forecast-icon"><img src="${sanitizeHTML(iconUrl)}" alt="${sanitizeHTML(description)}"></div>
-        <div class="forecast-desc">${sanitizeHTML(description)}</div>
-    `;
-
+            <div class="forecast-time">${sanitizeHTML(day)} ${sanitizeHTML(String(displayHours).padStart(2, '0'))}:00</div>
+            <div class="forecast-temp">${sanitizeHTML(String(temp))}°C</div>
+            <div class="forecast-icon"><img src="${sanitizeHTML(iconUrl)}" alt="${sanitizeHTML(description)}"></div>
+            <div class="forecast-desc">${sanitizeHTML(description)}</div>
+        `;
         forecastContainer.appendChild(forecastItem);
     });
 }
+
+// Attempt to fetch API key on page load to have it ready.
+// This is non-blocking for UI rendering.
+fetchApiKey().catch(error => {
+    // The alert is already handled within fetchApiKey.
+    // This catch is just to prevent an unhandled promise rejection warning in the console.
+    console.warn("Initial API key fetch failed on page load. Will retry on form submission if needed.");
+});
