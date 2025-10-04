@@ -43,6 +43,38 @@
     </div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="script.js"></script>
+
+    <div class="donate-container">
+        <button id="donateButton" class="donate-button">Donar</button>
+    </div>
+
+    <div id="donateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Donaciones</h2>
+            <div class="crypto-options">
+                <div class="crypto-option">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Bitcoin</span>
+                    <input type="text" value="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" id="btcAddress" readonly>
+                    <button class="copy-button" data-copy="btcAddress"><i class="far fa-copy"></i></button>
+                </div>
+                <div class="crypto-option">
+                    <i class="fab fa-litecoin-sign"></i>
+                    <span>Litecoin</span>
+                    <input type="text" value="Ldp1bS3QyY2n9X2Y8C9y4b2A4Z2A4Z2A4Z" id="ltcAddress" readonly>
+                    <button class="copy-button" data-copy="ltcAddress"><i class="far fa-copy"></i></button>
+                </div>
+                <div class="crypto-option">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>USDC</span>
+                    <input type="text" value="0x1234567890123456789012345678901234567890" id="usdcAddress" readonly>
+                    <button class="copy-button" data-copy="usdcAddress"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

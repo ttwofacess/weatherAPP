@@ -257,3 +257,45 @@ fetchApiKey().catch(error => {
     // This catch is just to prevent an unhandled promise rejection warning in the console.
     console.warn("Initial API key fetch failed on page load. Will retry on form submission if needed.");
 });
+
+// Modal functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById("donateModal");
+    const btn = document.getElementById("donateButton");
+    const span = document.getElementsByClassName("close-button")[0];
+
+    if(btn) {
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+    }
+
+    if(span) {
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    const copyButtons = document.querySelectorAll('.copy-button');
+    copyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const inputId = button.getAttribute('data-copy');
+            const input = document.getElementById(inputId);
+            input.select();
+            document.execCommand('copy');
+
+            // Visual feedback
+            const originalIcon = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                button.innerHTML = originalIcon;
+            }, 1500);
+        });
+    });
+});
