@@ -287,15 +287,17 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => {
             const inputId = button.getAttribute('data-copy');
             const input = document.getElementById(inputId);
-            input.select();
-            document.execCommand('copy');
-
-            // Visual feedback
-            const originalIcon = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => {
-                button.innerHTML = originalIcon;
-            }, 1500);
+            
+            navigator.clipboard.writeText(input.value).then(() => {
+                // Visual feedback
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.innerHTML = originalIcon;
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
         });
     });
 });

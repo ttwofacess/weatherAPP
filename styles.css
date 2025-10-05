@@ -220,9 +220,15 @@ button:hover {
 }
 
 .copy-button {
-    background: none;
-    border: none;
+    background: #eee;
+    border: 1px solid #ddd;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+
+.copy-button:hover {
+    background: #ddd;
 }
 
