@@ -6,6 +6,7 @@
     <title>Weather App</title>
     <link rel="icon" href="./assets/ico/favicon.ico" type="image/png" />
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 
@@ -44,5 +45,36 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="script.js"></script>
+
+    <div class="donate-container">
+        <button id="donateButton" class="donate-button">Donar</button>
+    </div>
+
+    <div id="donateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Donaciones</h2>
+            <div class="crypto-options">
+                <div class="crypto-option">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Bitcoin</span>
+                    <input type="text" value="bc1qxz4nxj8rzxzsnwj8u4rq46wy8dnf5h7yvzaqs2" id="btcAddress" readonly>
+                    <button class="copy-button" data-copy="btcAddress"><i class="far fa-copy"></i></button>
+                </div>
+                <div class="crypto-option">
+                    <i class="fa-solid fa-litecoin-sign"></i>
+                    <span>Litecoin</span>
+                    <input type="text" value="M8snytUjZP13KVTEHA4JCbHfy31Ve2xMr4" id="ltcAddress" readonly>
+                    <button class="copy-button" data-copy="ltcAddress"><i class="far fa-copy"></i></button>
+                </div>
+                <div class="crypto-option">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>USDT (TRC20)</span>
+                    <input type="text" value="TYsPkPyHbWN8cPuoDA7DohwhAdXWkVbQHm" id="usdcAddress" readonly>
+                    <button class="copy-button" data-copy="usdcAddress"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
