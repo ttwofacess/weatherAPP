@@ -83,7 +83,7 @@
         </div>
     </div>
     <script>
-        document.getElementById('language-switch').addEventListener('change', function() {
+        /* document.getElementById('language-switch').addEventListener('change', function() {
             if (this.checked) {
                 window.location.href = 'index_en.html';
             } else {
@@ -94,7 +94,37 @@
         // Set the switch state based on the current page
         if (window.location.pathname.includes('index_en.html')) {
             document.getElementById('language-switch').checked = true;
+        } */
+
+         // Guarda/lee la preferencia de idioma en localStorage y sincroniza el switch.
+    const langKey = 'weatherapp_lang';
+    const switchEl = document.getElementById('language-switch');
+
+    if (!switchEl) {
+        // Si por alguna razón el checkbox no existe, salir.
+        console.warn('language-switch not found');
+    } else {
+        // Aplicar estado guardado (si existe) o fallback según la URL.
+        const stored = localStorage.getItem(langKey);
+        if (stored) {
+            switchEl.checked = stored === 'en';
+        } else {
+            switchEl.checked = window.location.pathname.includes('index_en.html');
         }
+
+        // Al cambiar: guardar preferencia y navegar solo si hace falta.
+        switchEl.addEventListener('change', function () {
+            const lang = this.checked ? 'en' : 'es';
+            localStorage.setItem(langKey, lang);
+
+            // Navegar solo si la página actual no coincide con la preferencia.
+            if (lang === 'en' && !window.location.pathname.includes('index_en.html')) {
+                window.location.href = 'index_en.html';
+            } else if (lang === 'es' && window.location.pathname.includes('index_en.html')) {
+                window.location.href = 'index.html';
+            }
+        });
+    }
     </script>
 </body>
 </html>
