@@ -117,11 +117,22 @@
             const lang = this.checked ? 'en' : 'es';
             localStorage.setItem(langKey, lang);
 
-            const onEnPage = window.location.pathname.includes('index_en.html');
+            /* const onEnPage = window.location.pathname.includes('index_en.html');
             if (lang === 'en' && !onEnPage) {
                 window.location.href = 'index_en.html';
             } else if (lang === 'es' && onEnPage) {
                 window.location.href = 'index.html';
+            } */
+
+            // Target file según selección
+            const target = (lang === 'en') ? 'index_en.html' : 'index.html';
+
+            // Nombre del archivo actual (si existe) o empty string si la ruta termina en '/'
+            const currentFile = window.location.pathname.split('/').pop();
+
+            // Redirigir solo si no estamos ya en el archivo objetivo
+            if (currentFile !== target) {
+                window.location.href = target;
             }
         });
     });
