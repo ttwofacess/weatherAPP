@@ -84,19 +84,6 @@
         </div>
     </div>
     <script>
-        /* document.getElementById('language-switch').addEventListener('change', function() {
-            if (this.checked) {
-                window.location.href = 'index_en.html';
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        // Set the switch state based on the current page
-        if (window.location.pathname.includes('index_en.html')) {
-            document.getElementById('language-switch').checked = true;
-        } */
-
         document.addEventListener('DOMContentLoaded', function () {
         const langKey = 'weatherapp_lang';
         const switchEl = document.getElementById('language-switch');
@@ -116,13 +103,6 @@
         switchEl.addEventListener('change', function () {
             const lang = this.checked ? 'en' : 'es';
             localStorage.setItem(langKey, lang);
-
-            /* const onEnPage = window.location.pathname.includes('index_en.html');
-            if (lang === 'en' && !onEnPage) {
-                window.location.href = 'index_en.html';
-            } else if (lang === 'es' && onEnPage) {
-                window.location.href = 'index.html';
-            } */
 
             // Target file según selección
             const target = (lang === 'en') ? 'index_en.html' : 'index.html';
