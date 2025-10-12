@@ -13,6 +13,7 @@
 <body>
     <div class="container">
         <div class="language-switch-container">
+            <span class="lang-label">[eng]</span>
             <label class="switch">
                 <input type="checkbox" id="language-switch">
                 <span class="slider round"></span>
@@ -83,7 +84,7 @@
         </div>
     </div>
     <script>
-        document.getElementById('language-switch').addEventListener('change', function() {
+        /* document.getElementById('language-switch').addEventListener('change', function() {
             if (this.checked) {
                 window.location.href = 'index_en.html';
             } else {
@@ -94,7 +95,36 @@
         // Set the switch state based on the current page
         if (window.location.pathname.includes('index_en.html')) {
             document.getElementById('language-switch').checked = true;
+        } */
+
+        document.addEventListener('DOMContentLoaded', function () {
+        const langKey = 'weatherapp_lang';
+        const switchEl = document.getElementById('language-switch');
+        if (!switchEl) return console.warn('language-switch not found');
+
+        // Leer preferencia guardada; si no hay, usar la URL como fallback.
+        const stored = localStorage.getItem(langKey);
+        if (stored === 'en') {
+            switchEl.checked = true;
+        } else if (stored === 'es') {
+            switchEl.checked = false;
+        } else {
+            switchEl.checked = window.location.pathname.includes('index_en.html');
         }
+
+        // Al cambiar: guardar y navegar solo si hace falta.
+        switchEl.addEventListener('change', function () {
+            const lang = this.checked ? 'en' : 'es';
+            localStorage.setItem(langKey, lang);
+
+            const onEnPage = window.location.pathname.includes('index_en.html');
+            if (lang === 'en' && !onEnPage) {
+                window.location.href = 'index_en.html';
+            } else if (lang === 'es' && onEnPage) {
+                window.location.href = 'index.html';
+            }
+        });
+    });
     </script>
 </body>
 </html>

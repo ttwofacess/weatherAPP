@@ -13,6 +13,7 @@
 <body>
     <div class="container">
         <div class="language-switch-container">
+            <span class="lang-label">[esp]</span>
             <label class="switch">
                 <input type="checkbox" id="language-switch">
                 <span class="slider round"></span>
@@ -96,35 +97,34 @@
             document.getElementById('language-switch').checked = true;
         } */
 
-         // Guarda/lee la preferencia de idioma en localStorage y sincroniza el switch.
-    const langKey = 'weatherapp_lang';
-    const switchEl = document.getElementById('language-switch');
+         document.addEventListener('DOMContentLoaded', function () {
+        const langKey = 'weatherapp_lang';
+        const switchEl = document.getElementById('language-switch');
+        if (!switchEl) return console.warn('language-switch not found');
 
-    if (!switchEl) {
-        // Si por alguna razón el checkbox no existe, salir.
-        console.warn('language-switch not found');
-    } else {
-        // Aplicar estado guardado (si existe) o fallback según la URL.
+        // Leer preferencia guardada; si no hay, usar la URL como fallback.
         const stored = localStorage.getItem(langKey);
-        if (stored) {
-            switchEl.checked = stored === 'en';
+        if (stored === 'en') {
+            switchEl.checked = true;
+        } else if (stored === 'es') {
+            switchEl.checked = false;
         } else {
             switchEl.checked = window.location.pathname.includes('index_en.html');
         }
 
-        // Al cambiar: guardar preferencia y navegar solo si hace falta.
+        // Al cambiar: guardar y navegar solo si hace falta.
         switchEl.addEventListener('change', function () {
             const lang = this.checked ? 'en' : 'es';
             localStorage.setItem(langKey, lang);
 
-            // Navegar solo si la página actual no coincide con la preferencia.
-            if (lang === 'en' && !window.location.pathname.includes('index_en.html')) {
+            const onEnPage = window.location.pathname.includes('index_en.html');
+            if (lang === 'en' && !onEnPage) {
                 window.location.href = 'index_en.html';
-            } else if (lang === 'es' && window.location.pathname.includes('index_en.html')) {
+            } else if (lang === 'es' && onEnPage) {
                 window.location.href = 'index.html';
             }
         });
-    }
+    });
     </script>
 </body>
 </html>
