@@ -180,6 +180,9 @@ button:hover {
     background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 .slider:before {
@@ -192,6 +195,7 @@ button:hover {
     background-color: white;
     -webkit-transition: .4s;
     transition: .4s;
+    z-index: 1;
 }
 
 input:checked + .slider {
@@ -215,6 +219,32 @@ input:checked + .slider:before {
 
 .slider.round:before {
     border-radius: 50%;
+}
+
+/* Estilos para los textos del switch */
+.lang-text {
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 0;
+    transition: .4s;
+}
+
+.lang-text.esp {
+    padding-left: 8px;
+}
+
+.lang-text.eng {
+    padding-right: 8px;
+}
+
+/* Mostrar/ocultar texto según la posición del switch */
+input:checked ~ .slider .lang-text.esp {
+    opacity: 0.4;
+}
+
+input:not(:checked) ~ .slider .lang-text.eng {
+    opacity: 0.4;
 }
 
 .donate-container {
