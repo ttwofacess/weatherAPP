@@ -223,11 +223,12 @@ input:checked + .slider:before {
 
 /* Estilos para los textos del switch */
 .lang-text {
-    color: white;
+    color: #333333;
     font-size: 12px;
     font-weight: bold;
     z-index: 0;
     transition: .4s;
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .lang-text.esp {
@@ -240,11 +241,18 @@ input:checked + .slider:before {
 
 /* Mostrar/ocultar texto según la posición del switch */
 input:checked ~ .slider .lang-text.esp {
-    opacity: 0.4;
+    opacity: 0.5;
 }
 
 input:not(:checked) ~ .slider .lang-text.eng {
-    opacity: 0.4;
+    opacity: 0.5;
+}
+
+/* Texto activo más visible */
+input:not(:checked) ~ .slider .lang-text.esp,
+input:checked ~ .slider .lang-text.eng {
+    color: #1a1a1a;
+    text-shadow: 0px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .donate-container {
