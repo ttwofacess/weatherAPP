@@ -6,9 +6,9 @@
     <title>Weather App</title>
     <link rel="icon" href="./assets/ico/favicon.ico" type="image/png" />
     <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="assets/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/leaflet/leaflet.css" />
 </head>
-
 <body>
     <div class="container">
         <div class="language-switch-container">
@@ -20,9 +20,14 @@
                 </span>
             </label>
         </div>
+
         <form id="weatherForm">
             <div class="weatherForm">
-                <input type="text" id="cityInput" placeholder="E.g.: Madrid, es" required pattern="[a-zA-Z\s,]+" title="Only letters, spaces, and commas are allowed">
+                <input type="text" id="cityInput"
+                    placeholder="E.g.: Madrid, es"
+                    required
+                    pattern="[a-zA-Z\s,]+"
+                    title="Only letters, spaces, and commas are allowed">
                 <button type="submit">Search</button>
             </div>
         </form>
@@ -37,21 +42,16 @@
                     <span id="temperature"></span>°C
                 </div>
                 <div class="weather-details">
-                    <div class="wind">
-                        Wind: <span id="wind"></span> km/s
-                    </div>
-                    <div class="humidity">
-                        Humidity: <span id="humidity"></span>%
-                    </div>
+                    <div class="wind">Wind: <span id="wind"></span></div>
+                    <div class="humidity">Humidity: <span id="humidity"></span>%</div>
                 </div>
             </div>
             <div class="weather-description" id="description"></div>
         </div>
+
         <div id="map"></div>
         <div id="forecast" class="forecast"></div>
     </div>
-    <script src="assets/leaflet/leaflet.js"></script>
-    <script src="script_en.js"></script>
 
     <div class="donate-container">
         <button id="donateButton" class="donate-button">Donate</button>
@@ -83,39 +83,8 @@
             </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-        const langKey = 'weatherapp_lang';
-        const switchEl = document.getElementById('language-switch');
-        if (!switchEl) return console.warn('language-switch not found');
 
-        // Leer preferencia guardada; si no hay, usar la URL como fallback.
-        const stored = localStorage.getItem(langKey);
-        if (stored === 'en') {
-            switchEl.checked = true;
-        } else if (stored === 'es') {
-            switchEl.checked = false;
-        } else {
-            switchEl.checked = window.location.pathname.includes('index_en.html');
-        }
-
-        // Al cambiar: guardar y navegar solo si hace falta.
-        switchEl.addEventListener('change', function () {
-            const lang = this.checked ? 'en' : 'es';
-            localStorage.setItem(langKey, lang);
-
-            // Target file según selección
-            const target = (lang === 'en') ? 'index_en.html' : 'index.html';
-
-            // Nombre del archivo actual (si existe) o empty string si la ruta termina en '/'
-            const currentFile = window.location.pathname.split('/').pop();
-
-            // Redirigir solo si no estamos ya en el archivo objetivo
-            if (currentFile !== target) {
-                window.location.href = target;
-            }
-        });
-    });
-    </script>
+    <script src="assets/leaflet/leaflet.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
