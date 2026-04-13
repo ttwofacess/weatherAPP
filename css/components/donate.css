@@ -1,18 +1,27 @@
+/* components/donate.css — Donate button */
+
 .donate-container {
+    margin: 24px 0 32px;
     text-align: center;
-    margin-top: 20px;
 }
 
 .donate-button {
-    background-color: #4CAF50;
-    border: none;
-    border-radius: 5px;
-    color: white;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
     cursor: pointer;
-    font-size: 16px;
-    padding: 10px 20px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.10em;
+    padding: 10px 24px;
+    text-transform: uppercase;
+    transition: border-color var(--transition), color var(--transition), background var(--transition);
 }
 
 .donate-button:hover {
-    background-color: #45a049;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(91, 184, 245, 0.40);
+    color: var(--accent);
 }
