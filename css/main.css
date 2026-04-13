@@ -1,0 +1,11 @@
+/* Main CSS - Imports all component styles */
+@import 'components/base.css';
+@import 'components/layout.css';
+@import 'components/weather-card.css';
+@import 'components/forecast.css';
+@import 'components/search.css';
+@import 'components/map.css';
+@import 'components/language-switch.css';
+@import 'components/donate.css';
+@import 'components/modal.css';
+@import 'components/crypto-donations.css';

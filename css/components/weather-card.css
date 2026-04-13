@@ -1,0 +1,49 @@
+.weather-card {
+    background-color: #4682b4;
+    border-top: 2px solid #4CA;
+    color: #fff;
+    height: auto;
+    min-height: 250px;
+    overflow: hidden;
+    padding: 20px;
+    position: relative;
+    transition: background-color 2s ease;
+}
+
+.city-name {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.current-time {
+    font-size: 18px;
+}
+
+.weather-data {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.temperature {
+    font-size: 72px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.weather-details {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.wind, .humidity {
+    font-size: 18px;
+}
+
+.weather-description {
+    font-size: 24px;
+    margin-top: 20px;
+    text-align: center;
+}
