@@ -1,49 +1,91 @@
+/* components/weather-card.css — Current weather display */
+
 .weather-card {
-    background-color: #4682b4;
-    border-top: 2px solid #4CA;
-    color: #fff;
-    height: auto;
-    min-height: 250px;
+    background: linear-gradient(160deg, var(--card-from) 0%, var(--card-to) 100%);
+    border-top: 1px solid rgba(91, 184, 245, 0.25);
+    color: var(--text-primary);
+    min-height: 240px;
     overflow: hidden;
-    padding: 20px;
+    padding: 24px 24px 28px;
     position: relative;
-    transition: background-color 2s ease;
+    transition: background 2s ease;
+}
+
+/* Decorative ambient orb */
+.weather-card::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91, 184, 245, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.weather-info {
+    margin-bottom: 8px;
 }
 
 .city-name {
-    font-size: 28px;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .current-time {
-    font-size: 18px;
+    color: rgba(240, 244, 248, 0.65);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
 }
 
 .weather-data {
     align-items: center;
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin: 8px 0 16px;
 }
 
 .temperature {
-    font-size: 72px;
+    font-family: var(--font-display);
+    font-size: 80px;
     font-weight: 300;
-    margin-bottom: 10px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 8px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .weather-details {
     display: flex;
-    justify-content: space-around;
-    width: 100%;
+    gap: 24px;
+    justify-content: center;
 }
 
-.wind, .humidity {
-    font-size: 18px;
+.wind,
+.humidity {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    padding: 5px 14px;
 }
 
 .weather-description {
-    font-size: 24px;
-    margin-top: 20px;
+    color: rgba(240, 244, 248, 0.75);
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    margin-top: 12px;
     text-align: center;
+    text-transform: capitalize;
 }

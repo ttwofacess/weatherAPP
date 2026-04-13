@@ -1,29 +1,65 @@
+/* components/search.css — City search form */
+
 #weatherForm {
     align-items: center;
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 16px 20px 20px;
+}
+
+.weatherForm {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
+    display: flex;
+    overflow: hidden;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    width: 100%;
+}
+
+.weatherForm:focus-within {
+    border-color: rgba(91, 184, 245, 0.50);
+    box-shadow: 0 0 0 3px rgba(91, 184, 245, 0.12), 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
 #cityInput {
-    border: 1px solid #ddd;
-    border-radius: 5px 0 0 5px;
-    flex-grow: 0;
-    font-size: 16px;
-    padding: 10px;
-    width: 190px;
-}
-
-button {
-    background-color: #4CAF50;
+    background: rgba(255, 255, 255, 0.05);
     border: none;
-    border-radius: 0 5px 5px 0;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 10px 20px;
+    color: var(--text-primary);
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    outline: none;
+    padding: 12px 16px;
 }
 
-button:hover {
-    background-color: #45a049;
+#cityInput::placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Scoped to .weatherForm to avoid bleeding into other buttons */
+.weatherForm button {
+    background: var(--accent);
+    border: none;
+    border-radius: 0;
+    color: #0d1117;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 12px 18px;
+    text-transform: uppercase;
+    transition: background var(--transition), transform 0.1s;
+}
+
+.weatherForm button:hover {
+    background: #80caff;
+}
+
+.weatherForm button:active {
+    transform: scale(0.97);
 }

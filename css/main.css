@@ -1,4 +1,4 @@
-/* Main CSS - Imports all component styles */
+/* css/main.css — Entry point: imports all component styles */
 @import 'components/base.css';
 @import 'components/layout.css';
 @import 'components/weather-card.css';
