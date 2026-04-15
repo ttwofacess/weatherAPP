@@ -52,6 +52,9 @@ function updateTempOverlay(apiKey) {
  * @param {string} apiKey
  */
 export function updateMap(coords, apiKey) {
+    const mapEl = document.getElementById('map');
+    if (mapEl) mapEl.classList.remove('hidden');
+
     const { lat, lon, name } = coords;
     initOrMoveMap(lat, lon);
     updateMarker(lat, lon, name);

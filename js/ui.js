@@ -16,6 +16,10 @@ export function renderWeatherCard(data) {
     document.getElementById('wind').textContent          = `${sanitizeHTML(data.wind.speed.toFixed(1))} m/s`;
     document.getElementById('humidity').textContent      = sanitizeHTML(String(data.main.humidity));
 
+    const welcome = document.getElementById('welcomeContainer');
+    if (welcome) {
+        welcome.classList.add('hidden');
+    }
     document.getElementById('weatherResult').classList.remove('hidden');
 }
 
@@ -27,6 +31,7 @@ export function renderWeatherCard(data) {
  */
 export function renderForecast(forecastData) {
     const container = document.getElementById('forecast');
+    container.classList.remove('hidden');
     container.innerHTML = '';
 
     forecastData.list.slice(0, 16).forEach(item => {
