@@ -1,6 +1,7 @@
 /* css/main.css — Entry point: imports all component styles */
 @import 'components/base.css';
 @import 'components/layout.css';
+@import 'components/welcome.css';
 @import 'components/weather-card.css';
 @import 'components/forecast.css';
 @import 'components/search.css';

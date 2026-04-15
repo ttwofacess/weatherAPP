@@ -1,0 +1,25 @@
+/* components/welcome.css — Welcome screen with cover image */
+
+.welcome-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 240px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.cover-image {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: opacity 0.5s ease;
+}
+
+.welcome-container:hover .cover-image {
+    opacity: 1;
+}
