@@ -344,16 +344,14 @@ describe('main.js — errores de la API', () => {
         expect(renderWeatherCard).not.toHaveBeenCalled();
     });
 
-    it('BUG: cod viene como número en /weather y como string "200" en /forecast — comparación estricta', async () => {
-        // Si /weather devolviera "200" (string), la comparación !== 200 fallaría
-        // y una búsqueda legítima se reportaría como error.
+    it('acepta cod como string en /weather', async () => {
+        // /weather devuelve cod numérico hoy, pero si OWM lo cambiara a string
+        // una búsqueda legítima ya no se reportaría como error.
         fetchWeather.mockResolvedValue({ ...weatherPayload(), cod: '200' });
         await submit('Madrid');
 
-        expect(window.alert).toHaveBeenCalledWith(
-            expect.stringContaining('Ciudad no encontrada o error en datos')
-        );
-        expect(renderWeatherCard).not.toHaveBeenCalled();
+        expect(renderWeatherCard).toHaveBeenCalled();
+        expect(window.alert).not.toHaveBeenCalled();
     });
 
     it('sin doble encoding: el mensaje del alert muestra el "&" literal', async () => {
@@ -384,39 +382,49 @@ describe('main.js — errores de la API', () => {
         expect(coords.name).toBe('&lt;b&gt;x&lt;/b&gt; &amp; y');
     });
 
-    it('BUG: comparación estricta de cod — si el forecast devolviera 200 numérico falla', async () => {
+    it('acepta cod numérico en /forecast', async () => {
         fetchWeather.mockResolvedValue(weatherPayload());
-        // /weather devuelve cod numérico (200 !== 200 ok); /forecast devuelve "200".
-        fetchForecast.mockResolvedValue({ ...forecastPayload(), cod: 200 }); // numérico
+        // /forecast devuelve "200" (string) hoy; si fuera numérico, la
+        // comparación !== '200' lo habría tratado como error.
+        fetchForecast.mockResolvedValue({ ...forecastPayload(), cod: 200 });
         await submit('Madrid');
 
-        // 200 !== '200' es true -> una respuesta correcta se trata como error
-        expect(window.alert).toHaveBeenCalledWith(
-            'Hubo un error: Error al obtener el pronóstico: Respuesta inválida'
-        );
-        expect(renderForecast).not.toHaveBeenCalled();
-    });
-
-    it('el mismo fallo en sentido contrario: si /weather devolviera "200" string', async () => {
-        // Simetría: /weather hace !== 200 y /forecast hace !== '200'.
-        // Cada endpoint depende de que OWM mantenga el tipo, sin normalizar.
-        fetchWeather.mockResolvedValue({ ...weatherPayload(), cod: '200' });
-        await submit('Madrid');
-
-        expect(renderWeatherCard).not.toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalled();
-    });
-
-    it('BUG: asimetría de tipos en cod entre /weather y /forecast', async () => {
-        // main.js:73  -> weatherData.cod !== 200     (numérico)
-        // main.js:89  -> forecastData.cod !== '200' (string)
-        // Ninguno normaliza; ambos dependen del tipo que devuelva OWM.
-        fetchWeather.mockResolvedValue(weatherPayload());
-        fetchForecast.mockResolvedValue({ ...forecastPayload(), cod: '200' });
-
-        await submit('Madrid');
         expect(renderForecast).toHaveBeenCalled();
         expect(window.alert).not.toHaveBeenCalled();
+    });
+
+    it('ambos endpoints comparten la misma normalización de cod', async () => {
+        // main.js usa isOkCod() en los dos: no puede volver la asimetría
+        // número-vs-string sin que los tests de ambos endpoints fallen.
+        for (const cod of ['200', 200]) {
+            vi.clearAllMocks();
+            fetchWeather.mockResolvedValue({ ...weatherPayload(), cod });
+            fetchForecast.mockResolvedValue({ ...forecastPayload(), cod });
+            await submit('Madrid');
+            expect(renderWeatherCard, `/weather con cod ${typeof cod}`).toHaveBeenCalled();
+            expect(renderForecast, `/forecast con cod ${typeof cod}`).toHaveBeenCalled();
+        }
+    });
+
+    it.each([
+        [404],
+        ['404'],
+        [500],
+        ['500'],
+        [null],
+        [undefined],
+        [''],
+        ['not a number'],
+    ])('rechaza cod de error en ambos endpoints (%s)', async (cod) => {
+        fetchWeather.mockResolvedValue({ ...weatherPayload(), cod });
+        await submit('Madrid');
+        expect(renderWeatherCard).not.toHaveBeenCalled();
+
+        vi.clearAllMocks();
+        fetchWeather.mockResolvedValue(weatherPayload());
+        fetchForecast.mockResolvedValue({ ...forecastPayload(), cod });
+        await submit('Madrid');
+        expect(renderForecast).not.toHaveBeenCalled();
     });
 
     it('alerta si el pronóstico viene con cod != "200"', async () => {
