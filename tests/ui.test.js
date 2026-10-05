@@ -395,7 +395,7 @@ describe('initDonateModal', () => {
         expect(document.querySelector('.copy-button').innerHTML).toContain('fa-copy');
     });
 
-    it('BUG: no hace nada si falta algún elemento del modal', () => {
+    it('CARACTERIZACION: si falta algún elemento del modal, no hace nada', () => {
         document.getElementById('donateModal').remove();
         expect(() => initDonateModal()).not.toThrow();
     });

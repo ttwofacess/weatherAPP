@@ -117,12 +117,14 @@ describe('main.js — arranque', () => {
         expect(fetchApiKey).toHaveBeenCalled();
     });
 
-    it('BUG: un fallo al precargar la key solo avisa por consola, el usuario no se entera', async () => {
+    it('un fallo al precargar la key avisa en la página, no solo por consola', async () => {
         fetchApiKey.mockRejectedValue(new Error('boom'));
         await loadMain();
         document.dispatchEvent(new Event('DOMContentLoaded'));
         await flush();
+
         expect(console.warn).toHaveBeenCalled();
+        expect(showAppNotice).toHaveBeenCalled();
     });
 });
 
@@ -181,11 +183,12 @@ describe('main.js — rate limiting', () => {
         expect(fetchWeather).not.toHaveBeenCalled();
     });
 
-    it('BUG: el rate limit se consume ANTES de saber si la búsqueda es válida para la API', async () => {
+    it('el rate limit bloquea antes de gastar la llamada a la API', async () => {
         checkLimit.mockImplementation(() => { throw new Error('RATE_LIMIT'); });
         await submit('Madrid');
-        // la búsqueda ni se intentó, pero el límite ya se consumió igualmente
+        // la búsqueda no llega a la API ni consume la key
         expect(fetchApiKey).not.toHaveBeenCalled();
+        expect(fetchWeather).not.toHaveBeenCalled();
     });
 });
 
@@ -233,8 +236,9 @@ describe('main.js — flujo de éxito', () => {
         expect(renderForecast).toHaveBeenCalled();
     });
 
-    it('BUG: el nombre de la ciudad se pasa ya sanitizado a updateMap, pero renderWeatherCard vuelve a sanear', async () => {
-        // Doble capa de sanitización: main.js sanea, ui.js sanea otra vez.
+    it('el nombre de la ciudad llega en texto plano a updateMap', async () => {
+        // Ni main.js ni map.js escapan el nombre: el popup usa textContent.
+        // Solo queda un punto de escapado real, la plantilla de renderForecast.
         await submit('Madrid');
         const coords = updateMap.mock.calls[0][0];
         expect(coords.name).toBe('Madrid');
@@ -320,7 +324,7 @@ describe('main.js — fallo de apiKey', () => {
         expect(showAppNotice).not.toHaveBeenCalled();
     });
 
-    it('BUG: si fetchApiKey devuelve undefined sin lanzar, se muestra el aviso', async () => {
+    it('si fetchApiKey devuelve undefined sin lanzar, se muestra el aviso igualmente', async () => {
         getApiKey.mockReturnValue(null);
         fetchApiKey.mockResolvedValue(undefined);
 
