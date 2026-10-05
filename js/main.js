@@ -1,6 +1,6 @@
 // js/main.js — Orquestador: conecta módulos y maneja eventos de usuario
 
-import { rateLimiter, sanitizeHTML } from './utils.js';
+import { rateLimiter } from './utils.js';
 import { getActiveLang, t, initLanguageSwitch } from './i18n.js';
 import { fetchApiKey, fetchWeather, fetchForecast, getApiKey, hasApiKeyError } from './api.js';
 import { updateMap } from './map.js';
@@ -103,7 +103,7 @@ async function searchWeather(city, apiKey) {
         renderWeatherCard(weatherData);
         updateCityTime(weatherData.timezone);
         updateMap(
-            { lat: weatherData.coord.lat, lon: weatherData.coord.lon, name: sanitizeHTML(weatherData.name) },
+            { lat: weatherData.coord.lat, lon: weatherData.coord.lon, name: weatherData.name },
             apiKey
         );
 

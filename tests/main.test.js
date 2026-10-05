@@ -374,12 +374,12 @@ describe('main.js — errores de la API', () => {
         );
     });
 
-    it('BUG: el nombre que va al popup SÍ sigue sanitizado (bindPopup es HTML)', async () => {
+    it('el nombre del mapa va en texto plano: map.js lo mete como nodo', async () => {
         fetchWeather.mockResolvedValue(weatherPayload({ name: '<b>x</b> & y' }));
         await submit('Madrid');
         const coords = updateMap.mock.calls[0][0];
-        // escapado: si bindPopup lo tratara como HTML, no inyectaría nodos
-        expect(coords.name).toBe('&lt;b&gt;x&lt;/b&gt; &amp; y');
+        // main.js ya no escapa: el popup usa textContent, que nunca parsea HTML
+        expect(coords.name).toBe('<b>x</b> & y');
     });
 
     it('acepta cod numérico en /forecast', async () => {

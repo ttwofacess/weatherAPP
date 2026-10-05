@@ -23,12 +23,21 @@ function initOrMoveMap(lat, lon) {
 
 /**
  * Actualiza el marcador con el nombre de la ciudad.
+ *
+ * El contenido del popup se pasa como nodo y no como string a propósito:
+ * Leaflet asigna los strings con innerHTML (ver _updateContent en
+ * assets/leaflet/leaflet.js) y los nodos con appendChild. Con textContent
+ * el nombre nunca se parsea como HTML, así que no depende de que el
+ * llamador lo haya escapado.
  * @param {number} lat
  * @param {number} lon
- * @param {string} cityName - Ya sanitizado
+ * @param {string} cityName - Texto plano, se muestra tal cual
  */
 function updateMarker(lat, lon, cityName) {
-    marker = L.marker([lat, lon]).addTo(map).bindPopup(cityName).openPopup();
+    const label = document.createElement('span');
+    label.textContent = cityName;
+
+    marker = L.marker([lat, lon]).addTo(map).bindPopup(label).openPopup();
 }
 
 /**
@@ -48,7 +57,7 @@ function updateTempOverlay(apiKey) {
 
 /**
  * Punto de entrada principal: actualiza mapa completo con los datos de una ciudad.
- * @param {{ lat: number, lon: number, name: string }} coords
+ * @param {{ lat: number, lon: number, name: string }} coords - name en texto plano
  * @param {string} apiKey
  */
 export function updateMap(coords, apiKey) {
