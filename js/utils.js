@@ -1,9 +1,21 @@
 // js/utils.js — Utilidades puras (sin efectos secundarios, sin DOM)
 
+const HTML_ESCAPES = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+};
+
+/**
+ * Escapa texto para insertarlo en nodos de texto y en atributos entrecomillados.
+ * Escapa comillas porque el resultado se interpola en plantillas innerHTML
+ * (p. ej. ui.js renderForecast), donde un " sin escapar rompe el atributo.
+ */
 export function sanitizeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
 }
 
 export function fetchWithTimeout(resource, options = {}) {

@@ -39,29 +39,36 @@ describe('renderWeatherCard', () => {
         expect(document.getElementById('welcomeContainer').classList.contains('hidden')).toBe(true);
     });
 
-    it('BUG CONFIRMADO: doble encoding — un "&" en el nombre se muestra como "&amp;"', () => {
-        // renderWeatherCard asigna a textContent, que YA escapa. El sanitizeHTML
-        // previo codifica el "&" y el usuario ve la entidad literal.
+    it('sin doble encoding: un "&" en el nombre se muestra tal cual', () => {
+        // renderWeatherCard asigna a textContent, que ya escapa por su cuenta.
+        // Pasarlo por sanitizeHTML antes codificaba el "&" y el usuario veía
+        // "Smith &amp; Sons". Ahora se ve "Smith & Sons".
         renderWeatherCard(weatherPayload({ name: 'Smith & Sons' }));
-        expect(document.getElementById('cityName').textContent).toBe('Smith &amp; Sons');
+        expect(document.getElementById('cityName').textContent).toBe('Smith & Sons');
     });
 
-    it('BUG: igual con acentos y apóstrofos el nombre se ve corrupto', () => {
+    it('sin doble encoding: apóstrofos se muestran tal cual (St. John\'s)', () => {
+        renderWeatherCard(weatherPayload({ name: "St. John's" }));
+        expect(document.getElementById('cityName').textContent).toBe("St. John's");
+    });
+
+    it('sin doble encoding: acentos y eñes intactos', () => {
         renderWeatherCard(weatherPayload({ name: "L'Haÿ-les-Roses & Co" }));
-        expect(document.getElementById('cityName').textContent).toBe('L\'Haÿ-les-Roses &amp; Co');
+        expect(document.getElementById('cityName').textContent).toBe("L'Haÿ-les-Roses & Co");
     });
 
-    it('BUG: sanitizeHTML + textContent rompe también < y >', () => {
+    it('sigue siendo seguro: "<b>" se ve como texto, no se inyecta HTML', () => {
         renderWeatherCard(weatherPayload({ name: 'A <b>B</b> & C' }));
-        expect(document.getElementById('cityName').textContent).toBe('A &lt;b&gt;B&lt;/b&gt; &amp; C');
+        const el = document.getElementById('cityName');
+        expect(el.querySelector('b')).toBeNull();
+        expect(el.textContent).toBe('A <b>B</b> & C');
     });
 
-    it('sigue siendo seguro: no se inyecta HTML real', () => {
+    it('sigue siendo seguro: un <img onerror> no crea nodos', () => {
         renderWeatherCard(weatherPayload({ name: '<img src=x onerror=alert(1)>' }));
         const el = document.getElementById('cityName');
         expect(el.querySelector('img')).toBeNull();
-        // el texto mostrado lleva las entidades ya codificadas (doble encoding)
-        expect(el.textContent).toBe('&lt;img src=x onerror=alert(1)&gt;');
+        expect(el.textContent).toBe('<img src=x onerror=alert(1)>');
     });
 
     it('BUG: la tarjeta anterior NO se limpia — tras dos búsquedas quedan restos', () => {
@@ -215,27 +222,45 @@ describe('renderForecast', () => {
         expect(() => renderForecast({ cod: '200' })).toThrow();
     });
 
-    it('BUG CONFIRMADO (XSS): sanitizeHTML no escapa comillas dobles → inyección de atributos', () => {
+    it('XSS CERRADO: sanitizeHTML escapa comillas dobles → ya no se inyectan atributos', () => {
         // El `icon` (o el `description`) viene de la respuesta de OWM y se
-        // interpola dentro de src="..." / alt="...". sanitizeHTML escapa < y >
-        // pero NO las comillas, así que se puede romper el atributo e inyectar
-        // un manejador de eventos. Verificado:
+        // interpola dentro de src="..." / alt="...". Antes de este fix:
         //   <img src="...wn/x" onerror="alert(1).png" alt="a">
         const malicious = 'x" onerror="alert(1)';
         renderForecast(forecastPayload([
             { dt: DT, main: { temp: 20 }, weather: [{ description: 'a', icon: malicious }] },
         ]));
         const img = document.querySelector('.forecast-icon img');
-        expect(img.getAttribute('src')).toBe('https://openweathermap.org/img/wn/x');
-        expect(img.hasAttribute('onerror')).toBe(true);
+        expect(img.hasAttribute('onerror')).toBe(false);
+        // la comilla queda escapada y forma parte del valor del atributo,
+        // junto con el sufijo .png de la plantilla
+        expect(img.getAttribute('src'))
+            .toBe('https://openweathermap.org/img/wn/x" onerror="alert(1).png');
     });
 
-    it('BUG: el mismo fallo afecta al atributo alt de la descripción', () => {
+    it('XSS CERRADO: tampoco se inyecta onload desde la descripción', () => {
         renderForecast(forecastPayload([
             { dt: DT, main: { temp: 20 }, weather: [{ description: 'x" onload="alert(1)', icon: '01d' }] },
         ]));
         const img = document.querySelector('.forecast-icon img');
-        expect(img.hasAttribute('onload')).toBe(true);
+        expect(img.hasAttribute('onload')).toBe(false);
+        expect(img.getAttribute('alt')).toBe('x" onload="alert(1)');
+    });
+
+    it('XSS CERRADO: no se inyecta nada desde un payload que rompa el elemento entero', () => {
+        renderForecast(forecastPayload([
+            {
+                dt: DT, main: { temp: 20 },
+                weather: [{ description: '"><img src=x onerror=alert(1)>', icon: '01d' }],
+            },
+        ]));
+        // solo debe existir la img del icono, ninguna inyectada
+        const imgs = document.querySelectorAll('.forecast-item img');
+        expect(imgs).toHaveLength(1);
+        imgs.forEach(i => {
+            expect(i.hasAttribute('onerror')).toBe(false);
+            expect(i.hasAttribute('onload')).toBe(false);
+        });
     });
 });
 

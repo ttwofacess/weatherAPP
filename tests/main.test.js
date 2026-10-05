@@ -311,15 +311,32 @@ describe('main.js — errores de la API', () => {
         expect(renderWeatherCard).not.toHaveBeenCalled();
     });
 
-    it('BUG: el mensaje de error pasa por sanitizeHTML y luego a alert — doble encoding en el alert', async () => {
+    it('sin doble encoding: el mensaje del alert muestra el "&" literal', async () => {
+        // alert() es contexto de texto puro, no HTML: no necesita escape, y
+        // aplicarlo hacía que el usuario leyera literalmente "a &amp; b".
         fetchWeather.mockResolvedValue({ cod: 500, message: 'a & b' });
         await submit('Madrid');
 
-        // El alert es texto plano: no necesita sanitizeHTML, y aplicarlo
-        // codifica el "&" para que el usuario lea literalmente "a &amp; b".
         expect(window.alert).toHaveBeenCalledWith(
-            'Hubo un error: Ciudad no encontrada o error en datos: a &amp; b'
+            'Hubo un error: Ciudad no encontrada o error en datos: a & b'
         );
+    });
+
+    it('sin doble encoding: también en el mensaje del pronóstico', async () => {
+        fetchForecast.mockResolvedValue({ cod: '500', message: 'x & y <z>' });
+        await submit('Madrid');
+
+        expect(window.alert).toHaveBeenCalledWith(
+            'Hubo un error: Error al obtener el pronóstico: x & y <z>'
+        );
+    });
+
+    it('BUG: el nombre que va al popup SÍ sigue sanitizado (bindPopup es HTML)', async () => {
+        fetchWeather.mockResolvedValue(weatherPayload({ name: '<b>x</b> & y' }));
+        await submit('Madrid');
+        const coords = updateMap.mock.calls[0][0];
+        // escapado: si bindPopup lo tratara como HTML, no inyectaría nodos
+        expect(coords.name).toBe('&lt;b&gt;x&lt;/b&gt; &amp; y');
     });
 
     it('BUG: comparación estricta de cod — si el forecast devolviera 200 numérico falla', async () => {
