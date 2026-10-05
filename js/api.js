@@ -36,8 +36,11 @@ export async function fetchApiKey() {
 
     } catch (error) {
         console.error('Error fetching API key:', error.message);
+        // El estado es pegajoso a propósito: si /api/config falla ( casi siempre
+        // por una variable de entorno sin configurar en el deploy ) reintentar
+        // en cada búsqueda solo genera más peticiones fallidas. El aviso al
+        // usuario lo presenta main.js, no este módulo.
         apiKeyFetchError = true;
-        alert(t().apiLoadError);
         throw error;
     }
 }

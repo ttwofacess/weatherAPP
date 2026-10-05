@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderWeatherCard, renderForecast, initDonateModal } from '../js/ui.js';
+import { renderWeatherCard, renderForecast, initDonateModal, showAppNotice, hideAppNotice } from '../js/ui.js';
 import { mountAppDom, weatherPayload, forecastPayload } from './helpers/fixtures.js';
 
 beforeEach(() => {
@@ -261,6 +261,63 @@ describe('renderForecast', () => {
             expect(i.hasAttribute('onerror')).toBe(false);
             expect(i.hasAttribute('onload')).toBe(false);
         });
+    });
+});
+
+describe('showAppNotice / hideAppNotice', () => {
+    it('escribe el mensaje y hace visible el aviso', () => {
+        showAppNotice('No se pudo cargar la configuración');
+        const el = document.getElementById('appNotice');
+        expect(el.textContent).toBe('No se pudo cargar la configuración');
+        expect(el.classList.contains('hidden')).toBe(false);
+    });
+
+    it('usa textContent, así que un payload no inyecta HTML', () => {
+        showAppNotice('<img src=x onerror=alert(1)>');
+        const el = document.getElementById('appNotice');
+        expect(el.querySelector('img')).toBeNull();
+        expect(el.textContent).toBe('<img src=x onerror=alert(1)>');
+    });
+
+    it('sin doble encoding: el "&" se muestra literal', () => {
+        showAppNotice('config & clima');
+        expect(document.getElementById('appNotice').textContent).toBe('config & clima');
+    });
+
+    it('es idempotente: llamarlo dos veces no duplica texto', () => {
+        showAppNotice('aviso');
+        showAppNotice('aviso');
+        const el = document.getElementById('appNotice');
+        expect(el.textContent).toBe('aviso');
+        expect(el.childNodes).toHaveLength(1);
+    });
+
+    it('reemplaza el mensaje anterior en vez de concatenar', () => {
+        showAppNotice('primero');
+        showAppNotice('segundo');
+        expect(document.getElementById('appNotice').textContent).toBe('segundo');
+    });
+
+    it('hideAppNotice lo vuelve a ocultar', () => {
+        showAppNotice('aviso');
+        hideAppNotice();
+        expect(document.getElementById('appNotice').classList.contains('hidden')).toBe(true);
+    });
+
+    it('hideAppNotice no borra el texto, solo lo oculta', () => {
+        showAppNotice('aviso');
+        hideAppNotice();
+        expect(document.getElementById('appNotice').textContent).toBe('aviso');
+    });
+
+    it('no lanza si #appNotice no existe', () => {
+        document.getElementById('appNotice').remove();
+        expect(() => showAppNotice('x')).not.toThrow();
+        expect(() => hideAppNotice()).not.toThrow();
+    });
+
+    it('arranca oculto tras mountAppDom', () => {
+        expect(document.getElementById('appNotice').classList.contains('hidden')).toBe(true);
     });
 });
 

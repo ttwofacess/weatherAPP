@@ -19,6 +19,7 @@ const REQUIRED_IDS = [
     'language-switch',
     'welcomeContainer',
     'weatherResult',
+    'appNotice',
     'cityName',
     'currentTime',
     'temperature',
@@ -86,7 +87,21 @@ describe.each(htmlFiles)('%s — contrato con el JS', (file) => {
         expect(html).not.toContain('maxlength');
     });
 
-    it('la URL de la API key se pide a /api/config (ruta de la Pages Function)', () => {
+    it('el aviso existe, es un landmark accesible y arranca oculto', () => {
+    expect(html).toMatch(/id="appNotice"[^>]*role="alert"/);
+    expect(html).toMatch(/id="appNotice"[^>]*class="app-notice hidden"/);
+});
+
+it('el CSS del aviso está importado en main.css', () => {
+    expect(read('css/main.css')).toContain("components/notice.css");
+});
+
+it('el aviso usa el token de color definido en base.css', () => {
+    expect(read('css/components/notice.css')).toContain('var(--danger)');
+    expect(read('css/components/base.css')).toContain('--danger:');
+});
+
+it('la URL de la API key se pide a /api/config (ruta de la Pages Function)', () => {
         expect(read('js/api.js')).toContain("'/api/config'");
     });
 });

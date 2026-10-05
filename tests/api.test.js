@@ -84,49 +84,43 @@ describe('fetchApiKey — errores', () => {
         await expect(fetchApiKey()).rejects.toThrow('API key not found in server response.');
     });
 
-    it('hace alert con el mensaje traducido del idioma activo', async () => {
+    it('no presenta UI: no llama a alert(), solo propaga el error', async () => {
+        // Un módulo de datos no debería decidir cómo avisar al usuario.
+        // main.js muestra el aviso en la página.
         const { fetchApiKey } = await loadApi();
         fetchSpy.mockResolvedValue(jsonResponse({}, { ok: false, status: 500 }));
         await expect(fetchApiKey()).rejects.toThrow();
-        expect(window.alert).toHaveBeenCalledWith(
-            'No se pudo cargar la configuración de la aplicación. La funcionalidad del clima estará deshabilitada. Por favor, inténtelo más tarde.'
-        );
+        expect(window.alert).not.toHaveBeenCalled();
     });
 
-    it('BUG: el alert aparece dentro del módulo de datos — side effect no testeable ni accesible', async () => {
+    it('no toca el DOM en ningún camino', async () => {
         const { fetchApiKey } = await loadApi();
+        const spy = vi.spyOn(document, 'getElementById');
         fetchSpy.mockResolvedValue(jsonResponse({}, { ok: false, status: 500 }));
         await expect(fetchApiKey()).rejects.toThrow();
-        // fetchApiKey() no debería presentar UI; main.js ya gestiona el error.
-        expect(window.alert).toHaveBeenCalled();
+        expect(spy).not.toHaveBeenCalled();
     });
 
-    it('BUG CRÍTICO: un fallo deja el módulo envenenado para siempre', async () => {
+    it('el estado de error es pegajoso a propósito: no reintenta', async () => {
         const { fetchApiKey, hasApiKeyError } = await loadApi();
         fetchSpy.mockResolvedValue(jsonResponse({}, { ok: false, status: 500 }));
         await expect(fetchApiKey()).rejects.toThrow();
         expect(hasApiKeyError()).toBe(true);
 
-        // El comentario de main.js dice "Will retry on form submit", pero la segunda
-        // llamada NO vuelve a golpear la red: falla con un error distinto.
+        // Decisión de producto: avisar una vez y no reintentar. /api/config
+        // fallando casi siempre significa variable de entorno sin configurar,
+        // así que reintentar solo genera más peticiones fallidas.
         fetchSpy.mockClear();
         await expect(fetchApiKey()).rejects.toThrow('Previously failed to fetch API key.');
         expect(fetchSpy).not.toHaveBeenCalled();
     });
 
-    it('BUG: el alert solo salta en el PRIMER fallo; los siguientes son silenciosos', async () => {
-        // El guard de "Previously failed" lanza ANTES del try/catch, por lo que no
-        // vuelve a mostrar el alert. En main.js el flujo es:
-        //   1er búsqueda  -> fetch falla -> alert -> main.js marca hasApiKeyError()
-        //   2ª búsqueda  -> main.js hace return en la línea 48, sin alert
-        // El usuario solo ve un aviso en toda la sesión.
+    it('el error pegajoso tampoco dispara alert en intentos posteriores', async () => {
         const { fetchApiKey } = await loadApi();
         fetchSpy.mockResolvedValue(jsonResponse({}, { ok: false, status: 500 }));
         await expect(fetchApiKey()).rejects.toThrow();
-        expect(window.alert).toHaveBeenCalledTimes(1);
-
         await expect(fetchApiKey()).rejects.toThrow();
-        expect(window.alert).toHaveBeenCalledTimes(1);
+        expect(window.alert).not.toHaveBeenCalled();
     });
 
     it('BUG: si el body de error no es JSON, el mensaje incluye un hueco', async () => {

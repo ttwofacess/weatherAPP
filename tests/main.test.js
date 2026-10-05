@@ -13,6 +13,8 @@ const startClock    = vi.fn(() => 1);
 const renderWeatherCard = vi.fn();
 const renderForecast = vi.fn();
 const initDonateModal = vi.fn();
+const showAppNotice = vi.fn();
+const hideAppNotice = vi.fn();
 const initLanguageSwitch = vi.fn();
 const checkLimit = vi.fn();
 
@@ -21,7 +23,9 @@ vi.mock('../js/api.js', () => ({
 }));
 vi.mock('../js/map.js', () => ({ updateMap }));
 vi.mock('../js/time.js', () => ({ updateCityTime, startClock }));
-vi.mock('../js/ui.js', () => ({ renderWeatherCard, renderForecast, initDonateModal }));
+vi.mock('../js/ui.js', () => ({
+    renderWeatherCard, renderForecast, initDonateModal, showAppNotice, hideAppNotice,
+}));
 vi.mock('../js/i18n.js', async () => {
     const actual = await vi.importActual('../js/i18n.js');
     return { ...actual, initLanguageSwitch };
@@ -72,6 +76,8 @@ beforeEach(() => {
     startClock.mockImplementation(() => 1);
     initDonateModal.mockImplementation(() => {});
     initLanguageSwitch.mockImplementation(() => {});
+    showAppNotice.mockImplementation(() => {});
+    hideAppNotice.mockImplementation(() => {});
 
     vi.spyOn(window, 'alert').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -250,7 +256,19 @@ describe('main.js — flujo de éxito', () => {
 describe('main.js — fallo de apiKey', () => {
     beforeEach(async () => { await loadMain(); });
 
-    it('BUG: si ya hubo error de key, el submit no hace absolutely nada — ni alert ni log', async () => {
+    it('si fetchApiKey lanza en el submit, se muestra el aviso y no hay búsqueda', async () => {
+        getApiKey.mockReturnValue(null);
+        fetchApiKey.mockRejectedValue(new Error('boom'));
+
+        await submit('Madrid');
+
+        expect(fetchWeather).not.toHaveBeenCalled();
+        expect(showAppNotice).toHaveBeenCalledWith(
+            'No se pudo cargar la configuración de la aplicación. La búsqueda del clima estará deshabilitada hasta que recargues la página.'
+        );
+    });
+
+    it('si ya había error de key, el submit muestra el aviso en vez de fallar en silencio', async () => {
         getApiKey.mockReturnValue(null);
         hasApiKeyError.mockReturnValue(true);
 
@@ -258,31 +276,58 @@ describe('main.js — fallo de apiKey', () => {
 
         expect(fetchApiKey).not.toHaveBeenCalled();
         expect(fetchWeather).not.toHaveBeenCalled();
-        // main.js hace `if (!apiKey) return;` asumiendo que api.js ya avisó,
-        // pero en este camino no ha pasado por fetchApiKey: nadie avisó.
+        // antes esto no mostraba nada: el usuario pulsaba Buscar y no pasaba nada
+        expect(showAppNotice).toHaveBeenCalled();
         expect(window.alert).not.toHaveBeenCalled();
     });
 
-    it('BUG: si fetchApiKey lanza, el catch solo loguea (api.js ya alerted)', async () => {
+    it('no reintenta tras un fallo previo', async () => {
         getApiKey.mockReturnValue(null);
-        fetchApiKey.mockRejectedValue(new Error('boom'));
+        hasApiKeyError.mockReturnValue(true);
 
         await submit('Madrid');
+        await submit('Lima');
+        await submit('Bogotá');
 
-        expect(fetchWeather).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith(
-            'Error preparing weather search:', 'boom'
-        );
+        expect(fetchApiKey).not.toHaveBeenCalled();
+        // pero el aviso se asegura en cada intento, así que nunca desaparece
+        expect(showAppNotice).toHaveBeenCalledTimes(3);
     });
 
-    it('BUG: si fetchApiKey devuelve undefined sin lanzar, no hay aviso ni búsqueda', async () => {
+    it('el aviso de la carga inicial se muestra si /api/config falla al arrancar', async () => {
+        fetchApiKey.mockRejectedValue(new Error('boom'));
+        await loadMain();
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await flush();
+
+        expect(showAppNotice).toHaveBeenCalled();
+        expect(console.warn).toHaveBeenCalled();
+    });
+
+    it('el aviso se oculta si la carga inicial tiene éxito', async () => {
+        await loadMain();
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await flush();
+
+        expect(hideAppNotice).toHaveBeenCalled();
+        expect(showAppNotice).not.toHaveBeenCalled();
+    });
+
+    it('una búsqueda con key válida deja el aviso oculto', async () => {
+        await loadMain();
+        await submit('Madrid');
+        expect(hideAppNotice).toHaveBeenCalled();
+        expect(showAppNotice).not.toHaveBeenCalled();
+    });
+
+    it('BUG: si fetchApiKey devuelve undefined sin lanzar, se muestra el aviso', async () => {
         getApiKey.mockReturnValue(null);
         fetchApiKey.mockResolvedValue(undefined);
 
         await submit('Madrid');
 
         expect(fetchWeather).not.toHaveBeenCalled();
-        expect(window.alert).not.toHaveBeenCalled();
+        expect(showAppNotice).toHaveBeenCalled();
     });
 });
 

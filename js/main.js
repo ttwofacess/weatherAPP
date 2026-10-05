@@ -5,7 +5,7 @@ import { getActiveLang, t, initLanguageSwitch } from './i18n.js';
 import { fetchApiKey, fetchWeather, fetchForecast, getApiKey, hasApiKeyError } from './api.js';
 import { updateMap } from './map.js';
 import { updateCityTime, startClock } from './time.js';
-import { renderWeatherCard, renderForecast, initDonateModal } from './ui.js';
+import { renderWeatherCard, renderForecast, initDonateModal, showAppNotice, hideAppNotice } from './ui.js';
 
 // ─── Inicialización ──────────────────────────────────────────────────────────
 
@@ -15,9 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
     startClock();
 
     // Pre-carga la API key en background sin bloquear la UI
-    fetchApiKey().catch(() => {
-        console.warn('Initial API key fetch failed. Will retry on form submit.');
-    });
+    fetchApiKey()
+        .then(() => hideAppNotice())
+        .catch(() => {
+            // El aviso queda visible hasta que la app se recargue. No se
+            // reintenta: /api/config falló y el módulo ya no vuelve a llamar.
+            console.warn('Initial API key fetch failed. Weather search disabled until reload.');
+            showAppNotice(t().apiLoadError);
+        });
 });
 
 // ─── Búsqueda de clima ───────────────────────────────────────────────────────
@@ -40,17 +45,24 @@ document.getElementById('weatherForm').addEventListener('submit', async (event) 
     }
 
     try {
-        // Usa la key cacheada o la carga si no está disponible aún
+        // Usa la key cacheada, o la carga si aún no ha fallado nunca. Si ya
+        // falló, hasApiKeyError() es true y no se reintenta: se muestra el
+        // aviso y se detiene, en vez de fallar en silencio.
         let apiKey = getApiKey();
-        if (!apiKey && !hasApiKeyError()) {
-            apiKey = await fetchApiKey();
-        }
-        if (!apiKey) return; // fetchApiKey ya mostró el alert
 
+        if (!apiKey && !hasApiKeyError()) {
+            apiKey = await fetchApiKey().catch(() => null);
+        }
+
+        if (!apiKey) {
+            showAppNotice(t().apiLoadError);
+            return;
+        }
+
+        hideAppNotice();
         await searchWeather(cityInput, apiKey);
 
     } catch (error) {
-        // Errores de fetchApiKey ya se alertaron dentro del módulo api.js
         console.error('Error preparing weather search:', error.message);
     }
 });
