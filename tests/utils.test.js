@@ -16,6 +16,62 @@ describe('sanitizeHTML', () => {
         expect(sanitizeHTML('Madrid')).toBe('Madrid');
     });
 
+    it('escapa el & antes que nada (evita doble encoding de entidades)', () => {
+        // & se procesa en la misma pasada, así que "&amp;" -> "&amp;amp;" es
+        // lo correcto para una única pasada (no hay recursión).
+        expect(sanitizeHTML('&lt;')).toBe('&amp;lt;');
+    });
+
+    it('ESCAPA comillas dobles — cierra la inyección de atributos', () => {
+        expect(sanitizeHTML('x" onerror="alert(1)'))
+            .toBe('x&quot; onerror=&quot;alert(1)');
+    });
+
+    it('ESCAPA comillas simples', () => {
+        expect(sanitizeHTML("it's")).toBe('it&#39;s');
+    });
+
+    it('escapa todos los caracteres peligrosos de una vez', () => {
+        expect(sanitizeHTML(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+    });
+
+    it('el resultado es seguro dentro de un atributo entrecomillado', () => {
+        const el = document.createElement('div');
+        el.innerHTML = `<img src="x${sanitizeHTML('" onerror="alert(1)')}" alt="a">`;
+        const img = el.querySelector('img');
+        expect(img.hasAttribute('onerror')).toBe(false);
+        expect(img.getAttribute('src')).toBe('x" onerror="alert(1)');
+    });
+
+    it('el resultado es seguro dentro de un atributo con comillas simples', () => {
+        const el = document.createElement('div');
+        el.innerHTML = `<img alt='${sanitizeHTML("' onerror='alert(1)")}'>`;
+        expect(el.querySelector('img').hasAttribute('onerror')).toBe(false);
+    });
+
+    it('el resultado es seguro como nodo de texto', () => {
+        const el = document.createElement('div');
+        el.innerHTML = sanitizeHTML('<script>alert(1)</script>');
+        expect(el.querySelector('script')).toBeNull();
+        expect(el.textContent).toBe('<script>alert(1)</script>');
+    });
+
+    it('devuelve cadena vacía para null/undefined', () => {
+        expect(sanitizeHTML(null)).toBe('');
+        expect(sanitizeHTML(undefined)).toBe('');
+    });
+
+    it('convierte tipos no string', () => {
+        expect(sanitizeHTML(21.4)).toBe('21.4');
+        expect(sanitizeHTML(0)).toBe('0');
+    });
+
+    it('ya no depende del DOM (el módulo se declara sin DOM)', () => {
+        const spy = vi.spyOn(document, 'createElement');
+        sanitizeHTML('<b>x</b>');
+        expect(spy).not.toHaveBeenCalled();
+    });
+
     it('ESCAPA & (bug): un solo paso de encoding, no es idempotente como doble-sanitización', () => {
         // sanitizeHTML es un encoder de una pasada.
         // Si un llamador lo aplica y luego asigna a textContent, el usuario ve "&amp;".

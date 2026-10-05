@@ -10,11 +10,11 @@ import { t } from './i18n.js';
  * @param {Object} data - Respuesta JSON de /data/2.5/weather
  */
 export function renderWeatherCard(data) {
-    document.getElementById('cityName').textContent       = sanitizeHTML(data.name);
-    document.getElementById('temperature').textContent    = sanitizeHTML(data.main.temp.toFixed(1));
-    document.getElementById('description').textContent   = sanitizeHTML(data.weather[0].description);
-    document.getElementById('wind').textContent          = `${sanitizeHTML(data.wind.speed.toFixed(1))} m/s`;
-    document.getElementById('humidity').textContent      = sanitizeHTML(String(data.main.humidity));
+    document.getElementById('cityName').textContent       = data.name;
+    document.getElementById('temperature').textContent    = data.main.temp.toFixed(1);
+    document.getElementById('description').textContent   = data.weather[0].description;
+    document.getElementById('wind').textContent          = `${data.wind.speed.toFixed(1)} m/s`;
+    document.getElementById('humidity').textContent      = String(data.main.humidity);
 
     const welcome = document.getElementById('welcomeContainer');
     if (welcome) {

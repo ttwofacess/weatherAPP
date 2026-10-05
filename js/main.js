@@ -71,9 +71,9 @@ async function searchWeather(city, apiKey) {
         const weatherData = await fetchWeather(city, apiKey, lang);
 
         if (weatherData.cod !== 200) {
-            throw new Error(sanitizeHTML(
+            throw new Error(
                 `${strings.dataError}: ${weatherData.message || strings.invalidResponse}`
-            ));
+            );
         }
 
         renderWeatherCard(weatherData);
@@ -87,9 +87,9 @@ async function searchWeather(city, apiKey) {
         const forecastData = await fetchForecast(city, apiKey, lang);
 
         if (forecastData.cod !== '200') {
-            throw new Error(sanitizeHTML(
+            throw new Error(
                 `${strings.forecastDataError}: ${forecastData.message || strings.invalidResponse}`
-            ));
+            );
         }
 
         renderForecast(forecastData);
