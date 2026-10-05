@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 });
 
+/**
+ * OpenWeatherMap devuelve `cod` como número en /data/2.5/weather y como string
+ * en /data/2.5/forecast. Comparar contra un literal fijo hacía que un cambio de
+ * tipo en la respuesta convirtiera una petición correcta en un error, así que
+ * se normaliza a número antes de comparar.
+ * @param {number|string} cod
+ * @returns {boolean}
+ */
+function isOkCod(cod) {
+    return Number(cod) === 200;
+}
+
 // ─── Búsqueda de clima ───────────────────────────────────────────────────────
 
 document.getElementById('weatherForm').addEventListener('submit', async (event) => {
@@ -82,7 +94,7 @@ async function searchWeather(city, apiKey) {
         // 1. Clima actual
         const weatherData = await fetchWeather(city, apiKey, lang);
 
-        if (weatherData.cod !== 200) {
+        if (!isOkCod(weatherData.cod)) {
             throw new Error(
                 `${strings.dataError}: ${weatherData.message || strings.invalidResponse}`
             );
@@ -98,7 +110,7 @@ async function searchWeather(city, apiKey) {
         // 2. Pronóstico
         const forecastData = await fetchForecast(city, apiKey, lang);
 
-        if (forecastData.cod !== '200') {
+        if (!isOkCod(forecastData.cod)) {
             throw new Error(
                 `${strings.forecastDataError}: ${forecastData.message || strings.invalidResponse}`
             );

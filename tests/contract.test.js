@@ -121,6 +121,22 @@ describe('main.js — sin validación client-side de la ciudad', () => {
     });
 });
 
+describe('main.js — normalización de cod', () => {
+    it('ambos endpoints pasan por isOkCod, no por literales', () => {
+        const src = read('js/main.js');
+        expect(src).toContain('function isOkCod');
+        expect(src).toContain('if (!isOkCod(weatherData.cod))');
+        expect(src).toContain('if (!isOkCod(forecastData.cod))');
+        // reintroducir una comparación estricta contra un literal rompe esto
+        expect(src).not.toMatch(/\.cod\s*!==/);
+        expect(src).not.toMatch(/\.cod\s*===/);
+    });
+
+    it('isOkCod normaliza con Number, que tolera string y número', () => {
+        expect(read('js/main.js')).toMatch(/Number\(cod\)\s*===\s*200/);
+    });
+});
+
 describe('functions/api/config.js — contrato', () => {
     it('expone onRequestGet', async () => {
         const mod = await import('../functions/api/config.js');
