@@ -13,3 +13,6 @@ getApiKey.php
 # Ignore all .env files
 *.env
 
+# Test artifacts
+/coverage/
+
