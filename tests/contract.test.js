@@ -121,6 +121,24 @@ describe('main.js — sin validación client-side de la ciudad', () => {
     });
 });
 
+describe('Leaflet vendorizado — supuesto del popup', () => {
+    it('asigna strings con innerHTML y nodos con appendChild', () => {
+        // Toda la seguridad del popup depende de este comportamiento: si una
+        // actualización de Leaflet hiciera innerHTML con cualquier contenido,
+        // pasar el nombre como nodo dejaría de proteger frente a XSS.
+        const src = read('assets/leaflet/leaflet.js');
+        const m = src.match(/_updateContent:function\(\)\{(?:(?!},[a-zA-Z_$]+\:function).){0,700}/s);
+
+        expect(m, 'no se encontró _updateContent en leaflet.js').not.toBeNull();
+        expect(m[0]).toMatch(/"string"==typeof\s*\w+\)\s*\w+\.innerHTML/);
+        expect(m[0]).toMatch(/appendChild/);
+    });
+
+    it('la versión vendorizada es la esperada', () => {
+        expect(read('assets/leaflet/leaflet.js')).toMatch(/version:"[\d.]+"/);
+    });
+});
+
 describe('main.js — normalización de cod', () => {
     it('ambos endpoints pasan por isOkCod, no por literales', () => {
         const src = read('js/main.js');

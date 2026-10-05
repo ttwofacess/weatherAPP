@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { join } from 'node:path';
 import { mountAppDom } from './helpers/fixtures.js';
 import { createLeafletMock } from './helpers/leaflet-mock.js';
 
@@ -55,7 +56,10 @@ describe('updateMap — primera carga', () => {
         const { updateMap } = await loadMap();
         updateMap({ lat: 1, lon: 2, name: 'Madrid' }, 'KEY');
 
-        expect(log.markers[0]._popup).toBe('Madrid');
+        // el contenido es un nodo, no un string: Leaflet lo añade con appendChild
+        const content = log.markers[0]._popup;
+        expect(content).toBeInstanceOf(window.HTMLElement);
+        expect(content.textContent).toBe('Madrid');
         expect(log.popupsOpened).toContain(log.markers[0]);
     });
 
@@ -133,11 +137,11 @@ describe('updateMap — búsquedas sucesivas', () => {
         expect(removed).toBe(true);
     });
 
-    it('el nombre del popup se actualiza con cada búsqueda', async () => {
+it('el nombre del popup se actualiza con cada búsqueda', async () => {
         const { updateMap } = await loadMap();
-        updateMap({ lat: 1, lon: 2, name: 'Madrid' }, 'K');
-        updateMap({ lat: 3, lon: 4, name: 'Lima' }, 'K');
-        expect(log.markers[1]._popup).toBe('Lima');
+        updateMap({ lat: 1, lon: 2, name: 'Madrid' }, 'KEY');
+        updateMap({ lat: 3, lon: 4, name: 'Lima' }, 'KEY');
+        expect(log.markers[1]._popup.textContent).toBe('Lima');
     });
 });
 
@@ -167,11 +171,32 @@ describe('updateMap — robustez', () => {
         expect(log.maps[0]._id).toBe('map');
     });
 
-    it('BUG: bindPopup recibe HTML — si el nombre no viene sanitizado es XSS', async () => {
+    it.each([
+        '<img src=x onerror=alert(1)>',
+        '"><script>alert(1)</script>',
+        '<b>Madrid</b>',
+        'Madrid & Co',
+        "St. John's",
+    ])('XSS CERRADO: el nombre va como nodo con textContent (%s)', async (name) => {
         const { updateMap } = await loadMap();
-        // map.js NO sanitiza: confía en que main.js lo haga.
-        updateMap({ lat: 1, lon: 2, name: '<img src=x onerror=alert(1)>' }, 'KEY');
-        expect(log.markers[0]._popup).toBe('<img src=x onerror=alert(1)>');
+        updateMap({ lat: 1, lon: 2, name }, 'KEY');
+
+        const content = log.markers[0]._popup;
+        // nunca se parsea como HTML, así que no hay nodos que inyectar
+        expect(content.children).toHaveLength(0);
+        expect(content.querySelector('img')).toBeNull();
+        expect(content.querySelector('b')).toBeNull();
+        expect(content.querySelector('script')).toBeNull();
+        // y se muestra literal
+        expect(content.textContent).toBe(name);
+    });
+
+    it('map.js no necesita sanitizeHTML: no importa nada de utils.js', async () => {
+        const src = await import('node:fs').then(fs =>
+            fs.readFileSync(join(process.cwd(), 'js/map.js'), 'utf8'));
+        expect(src).not.toContain('sanitizeHTML');
+        // el escapado vive en el único sitio donde se construye HTML como string
+        expect(src).not.toMatch(/\.bindPopup\(\s*cityName\s*\)/);
     });
 
     it('la apiKey viaja en la query string de la capa de temperatura', async () => {
