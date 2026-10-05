@@ -72,44 +72,37 @@ describe.each(htmlFiles)('%s — contrato con el JS', (file) => {
         expect(inlineScripts).toHaveLength(0);
     });
 
-    it('BUG CONFIRMADO: el pattern del input es más restrictivo que el regex del JS', () => {
-        const pattern = html.match(/pattern="([^"]+)"/)?.[1];
-        expect(pattern).toBe('[a-zA-Z\\s,]+');
-
-        // main.js:30
-        const jsRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/;
-        const htmlRegex = new RegExp(`^${pattern}$`);
-
-        // Ambas aceptan el caso simple:
-        expect(jsRegex.test('Madrid')).toBe(true);
-        expect(htmlRegex.test('Madrid')).toBe(true);
-
-        // Pero DIVERGEN en ciudades con acentos o guiones: el navegador rechaza
-        // el submit antes de que main.js pueda validar nada.
-        for (const city of ['A Coruña', 'Lima-Perú', 'Bogotá']) {
-            expect(jsRegex.test(city), `JS acepta "${city}"`).toBe(true);
-            expect(htmlRegex.test(city), `HTML pattern rechaza "${city}"`).toBe(false);
-        }
+    it('el input de ciudad no lleva pattern: la validación es de OWM', () => {
+        expect(html).not.toContain('pattern=');
+        expect(html).not.toContain('Solo se permiten');
+        expect(html).not.toContain('Only letters');
     });
 
-    it('BUG CONFIRMADO: el regex del JS ni siquiera cubre todo el latín extendido', () => {
-        // La clase es [a-zA-ZáéíóúÁÉÍÓÚñÑ] — faltan ã ñ(acute) î ç ö ü ø å æ …
-        // Ciudades reales de OWM quedan inalcanzables.
-        const jsRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/;
+    it('el input de ciudad conserva required', () => {
+        expect(html).toMatch(/id="cityInput"[\s\S]{0,200}required/);
+    });
 
-        const rechazadas = ['São Paulo', 'Gdańsk', 'Curaçao', 'Zürich', 'Malmö', 'Ålesund'];
-        for (const city of rechazadas) {
-            expect(jsRegex.test(city), `JS debería aceptar "${city}"`).toBe(false);
-        }
-
-        // las que sí caen en la clase actual (í, ó sí están):
-        for (const city of ['Brasília', 'Vitória', 'Kraków', 'Bogotá', 'Málaga']) {
-            expect(jsRegex.test(city), `JS debería aceptar "${city}"`).toBe(true);
-        }
+    it('el input no lleva maxlength, para no recortar nombres largos', () => {
+        expect(html).not.toContain('maxlength');
     });
 
     it('la URL de la API key se pide a /api/config (ruta de la Pages Function)', () => {
         expect(read('js/api.js')).toContain("'/api/config'");
+    });
+});
+
+describe('main.js — sin validación client-side de la ciudad', () => {
+    it('no filtra caracteres antes de llamar a la API', () => {
+        // Si alguien reintroduce un regex, el contrato entre el HTML y el JS
+        // vuelve a depender de mantener ambos sincronizados, que es exactamente
+        // lo que rompió antes (el pattern del HTML era más restrictivo).
+        const src = read('js/main.js');
+        expect(src).not.toMatch(/cityInput\s*\)\s*\|\|/);
+        expect(src).toMatch(/if \(!cityInput\)/);
+    });
+
+    it('la URL se construye con encodeURIComponent sobre lo que sea', () => {
+        expect(read('js/api.js')).toContain('encodeURIComponent(city)');
     });
 });
 
