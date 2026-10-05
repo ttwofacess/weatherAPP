@@ -54,6 +54,28 @@ export function renderForecast(forecastData) {
     });
 }
 
+// ─── App Notice ──────────────────────────────────────────────────────────────
+
+/**
+ * Muestra un aviso persistente en la página. Es idempotente: llamarla varias
+ * veces con el mismo mensaje no duplica nada, solo lo deja visible.
+ * Sustituye al alert() de los módulos de datos para que el usuario vea el
+ * problema sin tener que acertar el diálogo modal.
+ * @param {string} message
+ */
+export function showAppNotice(message) {
+    const notice = document.getElementById('appNotice');
+    if (!notice) return;
+
+    notice.textContent = message;
+    notice.classList.remove('hidden');
+}
+
+/** Oculta el aviso (usado cuando una búsqueda posterior sí tiene éxito). */
+export function hideAppNotice() {
+    document.getElementById('appNotice')?.classList.add('hidden');
+}
+
 // ─── Donate Modal ────────────────────────────────────────────────────────────
 
 /**

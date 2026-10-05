@@ -17,6 +17,8 @@ export function mountAppDom() {
             <button type="submit">Buscar</button>
         </form>
 
+        <div id="appNotice" class="app-notice hidden" role="alert"></div>
+
         <div id="welcomeContainer" class="welcome-container"></div>
 
         <div id="weatherResult" class="weather-card hidden">

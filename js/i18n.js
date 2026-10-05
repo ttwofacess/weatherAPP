@@ -4,7 +4,7 @@ export const translations = {
     es: {
         // Alertas y errores
         invalidCity:     'Por favor ingrese un nombre de ciudad válido.',
-        apiLoadError:    'No se pudo cargar la configuración de la aplicación. La funcionalidad del clima estará deshabilitada. Por favor, inténtelo más tarde.',
+        apiLoadError:    'No se pudo cargar la configuración de la aplicación. La búsqueda del clima estará deshabilitada hasta que recargues la página.',
         apiKeyMissing:   'Error crítico: Falta la clave API para la búsqueda del clima.',
         rateLimitError:  'Por favor espere antes de realizar otra búsqueda.',
         cityNotFound:    'Ciudad no encontrada por OpenWeatherMap.',
@@ -23,7 +23,7 @@ export const translations = {
     },
     en: {
         invalidCity:     'Please enter a valid city name.',
-        apiLoadError:    'Could not load application settings. Weather functionality will be disabled. Please try again later.',
+        apiLoadError:    'Could not load application settings. Weather search will be disabled until you reload the page.',
         apiKeyMissing:   'Critical error: Missing API key for weather search.',
         rateLimitError:  'Please wait before making another search.',
         cityNotFound:    'City not found by OpenWeatherMap.',

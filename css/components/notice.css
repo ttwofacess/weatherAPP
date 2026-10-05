@@ -1,0 +1,27 @@
+/* components/notice.css — Aviso de error persistente (config de la API) */
+
+.app-notice {
+    align-items: flex-start;
+    background: rgba(255, 107, 107, 0.10);
+    border: 1px solid rgba(255, 107, 107, 0.35);
+    border-radius: 12px;
+    color: var(--text-primary);
+    display: flex;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 300;
+    gap: 10px;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    margin: 0 20px 16px;
+    padding: 12px 16px;
+}
+
+.app-notice::before {
+    color: var(--danger);
+    content: '!';
+    flex: 0 0 auto;
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.5;
+}
