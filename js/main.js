@@ -27,7 +27,7 @@ document.getElementById('weatherForm').addEventListener('submit', async (event) 
 
     const cityInput = document.getElementById('cityInput').value.trim();
 
-    if (!cityInput || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/.test(cityInput)) {
+    if (!cityInput) {
         alert(t().invalidCity);
         return;
     }

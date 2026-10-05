@@ -131,27 +131,30 @@ describe('main.js — validación de la ciudad', () => {
         expect(fetchWeather).not.toHaveBeenCalled();
     });
 
-    it('rechaza caracteres no permitidos', async () => {
-        await submit('Madrid; DROP TABLE');
-        expect(fetchWeather).not.toHaveBeenCalled();
+    it('la entrada vacía la bloquea el navegador por required, sin llegar al JS', async () => {
+        // defense in depth: required en el HTML y el check de JS coinciden
+        const input = document.getElementById('cityInput');
+        expect(input.hasAttribute('required')).toBe(true);
     });
 
-it('BUG: el regex del JS es más permisivo que el pattern del HTML', async () => {
-        // El JS acepta acentos, Ñ y guiones:
-        //   /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s,-]+$/
-        await submit('A Coruña-Málaga');
-        expect(fetchWeather).toHaveBeenCalled();
-
-        // pero el atributo pattern de index.html es solo "[a-zA-Z\s,]+", así que
-        // el navegador bloquea el submit antes de que el JS se entere.
-        const htmlPattern = /^[a-zA-Z\s,]+$/;
-        expect(htmlPattern.test('A Coruña-Málaga')).toBe(false);
-        expect(htmlPattern.test('Madrid, ES')).toBe(true);
-    });
-
-    it('acepta una ciudad con acentos', async () => {
-        await submit('Bogotá');
-        expect(fetchWeather).toHaveBeenCalledWith('Bogotá', 'KEY', 'es');
+    it.each([
+        ['Madrid; DROP TABLE'],
+        ['A Coruña-Málaga'],
+        ['Lima-Perú'],
+        ['Bogotá'],
+        ['Smith & Sons'],
+        ['AT&T Arena'],
+        ['São Paulo'],
+        ['Curaçao'],
+        ['Zürich'],
+        ['Malmö'],
+        ['Gdańsk'],
+        ['Kraków'],
+        ['!!!'],
+        ['   a   '],
+    ])('OWM decide: acepta cualquier entrada no vacía tal cual (%s)', async (city) => {
+        await submit(city);
+        expect(fetchWeather).toHaveBeenCalledWith(city.trim(), 'KEY', 'es');
     });
 
     it('hace trim de la entrada', async () => {
@@ -231,14 +234,11 @@ describe('main.js — flujo de éxito', () => {
         expect(coords.name).toBe('Madrid');
     });
 
-    it('BUG: una ciudad con "&" en el nombre NO se puede buscar', async () => {
-        // El regex de validación no permite "&", así que ni siquiera llega a la API.
-        // Ejemplos reales de OWM: "Smith & Sons", "AT&T Arena".
-        await submit('Smith & Sons');
-        expect(fetchWeather).not.toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith(
-            'Por favor ingrese un nombre de ciudad válido.'
-        );
+    it('una ciudad con "&" en el nombre ahora sí se busca', async () => {
+        // Antes el regex de validación rechazaba "&", así que "AT&T Arena"
+        // era inalcanzable. Con OWM decidiendo, llega a la API.
+        await submit('AT&T Arena');
+        expect(fetchWeather).toHaveBeenCalledWith('AT&T Arena', 'KEY', 'es');
     });
 
     it('no muestra alert en el camino feliz', async () => {
