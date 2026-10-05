@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLanguageSwitch();
     initDonateModal();
     startClock();
+    initWeatherForm();
 
     // Pre-carga la API key en background sin bloquear la UI
     fetchApiKey()
@@ -39,45 +40,60 @@ function isOkCod(cod) {
 
 // ─── Búsqueda de clima ───────────────────────────────────────────────────────
 
-document.getElementById('weatherForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const cityInput = document.getElementById('cityInput').value.trim();
-
-    if (!cityInput) {
-        alert(t().invalidCity);
+/**
+ * Registra el submit del formulario de búsqueda.
+ * Se registra desde DOMContentLoaded y con guarda: colgado a nivel de módulo, un
+ * id renombrado en el HTML provocaba un TypeError al importar que mataba el
+ * módulo entero (idioma, reloj y modal incluidos).
+ */
+function initWeatherForm() {
+    const form = document.getElementById('weatherForm');
+    if (!form) {
+        console.warn('weatherForm element not found. Search is disabled.');
         return;
     }
 
-    try {
-        rateLimiter.checkLimit();
-    } catch {
-        alert(t().rateLimitError);
-        return;
-    }
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-    try {
-        // Usa la key cacheada, o la carga si aún no ha fallado nunca. Si ya
-        // falló, hasApiKeyError() es true y no se reintenta: se muestra el
-        // aviso y se detiene, en vez de fallar en silencio.
-        let apiKey = getApiKey();
+        const input = document.getElementById('cityInput');
+        const cityInput = input ? input.value.trim() : '';
 
-        if (!apiKey && !hasApiKeyError()) {
-            apiKey = await fetchApiKey().catch(() => null);
-        }
-
-        if (!apiKey) {
-            showAppNotice(t().apiLoadError);
+        if (!cityInput) {
+            alert(t().invalidCity);
             return;
         }
 
-        hideAppNotice();
-        await searchWeather(cityInput, apiKey);
+        try {
+            rateLimiter.checkLimit();
+        } catch {
+            alert(t().rateLimitError);
+            return;
+        }
 
-    } catch (error) {
-        console.error('Error preparing weather search:', error.message);
-    }
-});
+        try {
+            // Usa la key cacheada, o la carga si aún no ha fallado nunca. Si ya
+            // falló, hasApiKeyError() es true y no se reintenta: se muestra el
+            // aviso y se detiene, en vez de fallar en silencio.
+            let apiKey = getApiKey();
+
+            if (!apiKey && !hasApiKeyError()) {
+                apiKey = await fetchApiKey().catch(() => null);
+            }
+
+            if (!apiKey) {
+                showAppNotice(t().apiLoadError);
+                return;
+            }
+
+            hideAppNotice();
+            await searchWeather(cityInput, apiKey);
+
+        } catch (error) {
+            console.error('Error preparing weather search:', error.message);
+        }
+    });
+}
 
 // ─── Flujo principal de búsqueda ─────────────────────────────────────────────
 

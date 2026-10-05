@@ -72,21 +72,16 @@ describe('sanitizeHTML', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    it('ESCAPA & (bug): un solo paso de encoding, no es idempotente como doble-sanitización', () => {
-        // sanitizeHTML es un encoder de una pasada.
-        // Si un llamador lo aplica y luego asigna a textContent, el usuario ve "&amp;".
+    it('escapa & en una sola pasada', () => {
         expect(sanitizeHTML('a & b')).toBe('a &amp; b');
     });
 
-    it('BUG CONFIRMADO: doble sanitización produce doble encoding', () => {
+    it('no es idempotente: aplicarlo dos veces codifica de más', () => {
+        // Ningún llamador actual sanitiza dos veces, pero conviene fijarlo:
+        // si alguien lo hiciera, el texto mostraría entidades literales.
         const once = sanitizeHTML('Ciudad & Co');
         const twice = sanitizeHTML(once);
         expect(twice).toBe('Ciudad &amp;amp; Co');
-    });
-
-    it('no es idempotente', () => {
-        const s = 'A & B <b>';
-        expect(sanitizeHTML(sanitizeHTML(s))).not.toBe(sanitizeHTML(s));
     });
 });
 

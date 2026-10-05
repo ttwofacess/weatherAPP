@@ -31,6 +31,8 @@ export function renderWeatherCard(data) {
  */
 export function renderForecast(forecastData) {
     const container = document.getElementById('forecast');
+    if (!container) return;
+
     container.classList.remove('hidden');
     container.innerHTML = '';
 

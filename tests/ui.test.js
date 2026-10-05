@@ -213,9 +213,9 @@ describe('renderForecast', () => {
         expect(document.getElementById('forecast').classList.contains('hidden')).toBe(false);
     });
 
-    it('BUG: lanza si falta #forecast (sin guarda, a diferencia de renderWeatherCard)', () => {
+    it('si falta #forecast, no lanza (misma guarda que renderWeatherCard)', () => {
         document.getElementById('forecast').remove();
-        expect(() => renderForecast(forecastPayload([]))).toThrow();
+        expect(() => renderForecast(forecastPayload([]))).not.toThrow();
     });
 
     it('BUG: no valida el shape del payload — list undefined revienta', () => {
@@ -395,7 +395,7 @@ describe('initDonateModal', () => {
         expect(document.querySelector('.copy-button').innerHTML).toContain('fa-copy');
     });
 
-    it('BUG: no hace nada si falta algún elemento del modal', () => {
+    it('CARACTERIZACION: si falta algún elemento del modal, no hace nada', () => {
         document.getElementById('donateModal').remove();
         expect(() => initDonateModal()).not.toThrow();
     });
