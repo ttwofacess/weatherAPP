@@ -213,9 +213,9 @@ describe('renderForecast', () => {
         expect(document.getElementById('forecast').classList.contains('hidden')).toBe(false);
     });
 
-    it('BUG: lanza si falta #forecast (sin guarda, a diferencia de renderWeatherCard)', () => {
+    it('si falta #forecast, no lanza (misma guarda que renderWeatherCard)', () => {
         document.getElementById('forecast').remove();
-        expect(() => renderForecast(forecastPayload([]))).toThrow();
+        expect(() => renderForecast(forecastPayload([]))).not.toThrow();
     });
 
     it('BUG: no valida el shape del payload — list undefined revienta', () => {

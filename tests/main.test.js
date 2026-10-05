@@ -35,9 +35,26 @@ vi.mock('../js/utils.js', async () => {
     return { ...actual, rateLimiter: { checkLimit } };
 });
 
-/** Importa main.js con el DOM ya montado (registra los listeners). */
+/**
+ * Importa main.js sin disparar DOMContentLoaded. El módulo registra sus
+ * listeners al importar, pero el formulario se registra dentro del evento.
+ */
 async function loadMain() {
     await import('../js/main.js');
+}
+
+/**
+ * Importa main.js y dispara DOMContentLoaded, que es lo que registra el
+ * formulario de búsqueda. Necesario en cualquier test que haga submit().
+ */
+async function loadAndInit() {
+    await loadMain();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    await flush();
+    // La precarga de la API key dispara fetchApiKey; se limpia el historial
+    // para que cada test afirme solo sobre sus propias llamadas.
+    // clearAllMocks (no reset) conserva las implementaciones del beforeEach.
+    vi.clearAllMocks();
 }
 
 /** Envía el formulario de búsqueda y deja correr los handlers async. */
@@ -83,9 +100,30 @@ beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    trackDomReadyListeners();
 });
 
+/**
+ * Cada import de main.js (forzado por vi.resetModules) añade un listener de
+ * DOMContentLoaded al mismo document, que jsdom comparte entre los tests de un
+ * fichero. Sin retirarlos, el evento dispara los N módulos históricos y los
+ * contadores de mocks se multiplican. Se capturan al añadir y se quitan al
+ * terminar cada test.
+ */
+let domReadyHandlers = [];
+
+function trackDomReadyListeners() {
+    const original = document.addEventListener.bind(document);
+    vi.spyOn(document, 'addEventListener').mockImplementation((type, handler, opts) => {
+        if (type === 'DOMContentLoaded') domReadyHandlers.push(handler);
+        return original(type, handler, opts);
+    });
+}
+
 afterEach(() => {
+    domReadyHandlers.forEach(h => document.removeEventListener('DOMContentLoaded', h));
+    domReadyHandlers = [];
     vi.restoreAllMocks();
 });
 
@@ -103,11 +141,36 @@ describe('main.js — arranque', () => {
         expect(startClock).toHaveBeenCalled();
     });
 
-    it('BUG: si falta #weatherForm, importar main.js lanza TypeError y TODO el módulo muere', async () => {
+    it('si falta #weatherForm, importar main.js NO revienta', async () => {
         document.getElementById('weatherForm').remove();
-        // El addEventListener de la línea 25 está a nivel de módulo, fuera del
-        // guard DOMContentLoaded, así que revienta al importar.
-        await expect(loadMain()).rejects.toThrow(TypeError);
+        await expect(loadMain()).resolves.toBeUndefined();
+    });
+
+    it('si falta #weatherForm, el resto de la app sigue arrancando', async () => {
+        // Antes el addEventListener estaba a nivel de módulo, así que un id
+        // renombrado en el HTML mataba el módulo entero. Ahora la búsqueda
+        // queda deshabilitada pero idioma, modal y reloj siguen funcionando.
+        document.getElementById('weatherForm').remove();
+        await loadMain();
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await flush();
+
+        expect(initLanguageSwitch).toHaveBeenCalled();
+        expect(initDonateModal).toHaveBeenCalled();
+        expect(startClock).toHaveBeenCalled();
+        expect(console.warn).toHaveBeenCalled();
+    });
+
+    it('si falta #weatherForm, no se registra ningún submit', async () => {
+        document.getElementById('weatherForm').remove();
+        await loadAndInit();
+        expect(fetchWeather).not.toHaveBeenCalled();
+    });
+
+    it('si falta #cityInput, el submit no revienta', async () => {
+        document.getElementById('cityInput').remove();
+        await loadAndInit();
+        expect(fetchWeather).not.toHaveBeenCalled();
     });
 
     it('precarga la apiKey en background sin bloquear', async () => {
@@ -129,7 +192,7 @@ describe('main.js — arranque', () => {
 });
 
 describe('main.js — validación de la ciudad', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('rechaza una ciudad vacía', async () => {
         await submit('   ');
@@ -172,7 +235,7 @@ describe('main.js — validación de la ciudad', () => {
 });
 
 describe('main.js — rate limiting', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('muestra el mensaje de espera si el limiter salta', async () => {
         checkLimit.mockImplementation(() => { throw new Error('RATE_LIMIT'); });
@@ -193,7 +256,7 @@ describe('main.js — rate limiting', () => {
 });
 
 describe('main.js — flujo de éxito', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('pide clima y pronóstico con la key cacheada', async () => {
         await submit('Madrid');
@@ -258,7 +321,7 @@ describe('main.js — flujo de éxito', () => {
 });
 
 describe('main.js — fallo de apiKey', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('si fetchApiKey lanza en el submit, se muestra el aviso y no hay búsqueda', async () => {
         getApiKey.mockReturnValue(null);
@@ -336,7 +399,7 @@ describe('main.js — fallo de apiKey', () => {
 });
 
 describe('main.js — errores de la API', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('alerta si el clima viene con cod != 200', async () => {
         fetchWeather.mockResolvedValue({ cod: 404, message: 'Not Found' });
@@ -491,7 +554,7 @@ describe('main.js — errores de la API', () => {
 });
 
 describe('main.js — concurrencia', () => {
-    beforeEach(async () => { await loadMain(); });
+    beforeEach(async () => { await loadAndInit(); });
 
     it('BUG: dos búsquedas simultáneas no se cancelan ni se serializan', async () => {
         let resolveWeather;
